@@ -1,0 +1,13 @@
+{
+  "name": "@socket-game/shared",
+  "version": "1.0.0",
+  "description": "Shared constants and types for socket game",
+  "main": "index.ts",
+  "types": "index.ts",
+  "scripts": {
+    "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
