@@ -87,14 +87,14 @@ export const useLogout = () => {
       reset();
       
       // Navigate to login
-      navigate(routes.login);
+      navigate(routes.landing);
     },
     onError: (error) => {
       console.error('Logout error:', getErrorMessage(error));
       // Even if logout fails, clear local state
       queryClient.clear();
       reset();
-      navigate(routes.login);
+      navigate(routes.landing);
     },
   });
 };

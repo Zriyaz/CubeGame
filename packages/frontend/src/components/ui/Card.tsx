@@ -11,43 +11,90 @@ export interface CardProps extends StackProps {
 export const Card = styled(Stack, {
   name: 'Card',
   backgroundColor: '$surface',
-  borderRadius: '$lg',
+  borderRadius: 12,
   padding: '$4',
   animation: 'lazy',
+  position: 'relative',
+  overflow: 'hidden',
+  
+  // Add subtle gradient overlay
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 100%)',
+    pointerEvents: 'none',
+  },
   
   variants: {
     variant: {
       default: {
         backgroundColor: '$surface',
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.05)',
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)',
       },
       
       elevated: {
         backgroundColor: '$surface',
-        elevation: '$2',
-        shadowColor: '$neonBlue',
-        shadowOpacity: 0.1,
-        shadowRadius: 10,
+        borderWidth: 1,
+        borderColor: 'rgba(0, 212, 255, 0.1)',
+        boxShadow: `
+          0 0 1px rgba(0, 212, 255, 0.5),
+          0 4px 20px rgba(0, 0, 0, 0.5),
+          inset 0 1px 0 rgba(255, 255, 255, 0.05)
+        `,
       },
       
       outlined: {
-        backgroundColor: 'transparent',
-        borderWidth: 1,
-        borderColor: '$borderColor',
+        backgroundColor: 'rgba(18, 18, 26, 0.5)',
+        borderWidth: 2,
+        borderColor: 'rgba(0, 212, 255, 0.2)',
+        backdropFilter: 'blur(10px)',
+        
+        '&::after': {
+          content: '""',
+          position: 'absolute',
+          top: -2,
+          left: -2,
+          right: -2,
+          bottom: -2,
+          background: 'linear-gradient(45deg, $neonBlue, $neonPurple, $neonPink, $neonBlue)',
+          borderRadius: 12,
+          opacity: 0,
+          zIndex: -1,
+          transition: 'opacity 0.3s',
+          backgroundSize: '400% 400%',
+          animation: 'gradientShift 10s ease infinite',
+        },
       },
     },
     
     interactive: {
       true: {
         cursor: 'pointer',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         
         hoverStyle: {
           backgroundColor: '$surfaceHover',
           scale: 1.02,
-          borderColor: '$neonBlue',
+          borderColor: 'rgba(0, 212, 255, 0.4)',
+          
+          '&.outlined::after': {
+            opacity: 0.1,
+          },
         },
         
         pressStyle: {
           scale: 0.98,
+        },
+        
+        focusStyle: {
+          borderColor: 'rgba(0, 212, 255, 0.6)',
+          outlineWidth: 0,
         },
       },
     },

@@ -48,20 +48,27 @@ export const GameCell = memo(({
       <Stack
         width={size}
         height={size}
-        backgroundColor={ownerId ? color : '$cellEmpty'}
-        borderColor={ownerId ? color : '$gridLine'}
-        borderWidth={2}
-        borderRadius="$cell"
+        backgroundColor={ownerId ? color : 'rgba(0, 0, 0, 0.5)'}
+        borderColor={ownerId ? color : 'rgba(255, 255, 255, 0.08)'}
+        borderWidth={1}
+        borderRadius={8}
         cursor={canInteract ? 'pointer' : 'default'}
         animation="cellular"
         position="relative"
+        overflow="hidden"
         onPress={handleClick}
+        style={{
+          backdropFilter: !ownerId ? 'blur(5px)' : undefined,
+          boxShadow: ownerId 
+            ? `0 0 20px ${color}66, inset 0 0 15px ${color}33`
+            : 'inset 0 0 10px rgba(0, 0, 0, 0.5)',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        }}
         hoverStyle={isHoverable && canInteract ? {
-          scale: 1.05,
-          borderColor: '$neonBlue',
-          backgroundColor: '$cellHover',
+          scale: 1.1,
+          borderColor: 'rgba(0, 212, 255, 0.6)',
+          backgroundColor: 'rgba(0, 212, 255, 0.1)',
           borderWidth: 2,
-          shadowColor: '$neonBlue',
           shadowRadius: 10,
           shadowOpacity: 0.5,
         } : {}}

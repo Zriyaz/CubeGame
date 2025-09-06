@@ -19,7 +19,6 @@ import { SocketProvider } from './contexts/SocketContext';
 
 // Pages
 import { LandingPage } from './pages/auth/LandingPage';
-import { LoginPage } from './pages/auth/LoginPage';
 import { DashboardPage } from './pages/lobby/DashboardPage';
 import { CreateGamePage } from './pages/game/CreateGamePage';
 import { JoinGamePage } from './pages/game/JoinGamePage';
@@ -65,9 +64,10 @@ function AppContent() {
             path={routes.landing}
             element={isAuthenticated ? <Navigate to={routes.dashboard} replace /> : <LandingPage />}
           />
+          {/* Redirect login to landing page */}
           <Route
             path={routes.login}
-            element={isAuthenticated ? <Navigate to={routes.dashboard} replace /> : <LoginPage />}
+            element={<Navigate to={routes.landing} replace />}
           />
 
           {/* Protected Routes */}

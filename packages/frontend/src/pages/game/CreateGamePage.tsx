@@ -13,7 +13,7 @@ const BOARD_SIZES = [
 ];
 
 const PLAYER_COUNTS = Array.from(
-  { length: GAME_CONFIG.MAX_PLAYERS - GAME_CONFIG.MIN_PLAYERS + 1 }, 
+  { length: GAME_CONFIG.MAX_PLAYERS - GAME_CONFIG.MIN_PLAYERS + 1 },
   (_, i) => GAME_CONFIG.MIN_PLAYERS + i
 );
 
@@ -41,134 +41,246 @@ export function CreateGamePage() {
   };
 
   return (
-    <YStack flex={1} padding="$4" space="$6" maxWidth={600} alignSelf="center" width="100%">
-      <YStack space="$2">
-        <Text fontSize="$2xl" fontWeight="bold">
-          Create New Game
-        </Text>
-        <Text color="$textMuted">
-          Set up your battlefield and invite players to join
-        </Text>
-      </YStack>
-
-      <Card variant="elevated" space="$4">
-        {/* Game Name */}
-        <Input
-          label="Game Name"
-          placeholder="Epic Grid Battle"
-          value={gameName}
-          onChangeText={setGameName}
-          fullWidth
-          maxLength={50}
-        />
-
-        {/* Board Size */}
-        <YStack space="$2">
-          <Text fontSize="$base" color="$textMuted">
-            Board Size
-          </Text>
-          <XStack space="$2" flexWrap="wrap">
-            {BOARD_SIZES.map((size) => (
-              <BoardSizeOption
-                key={size.value}
-                {...size}
-                selected={boardSize === size.value}
-                onSelect={() => setBoardSize(size.value)}
-              />
-            ))}
-          </XStack>
-        </YStack>
-
-        {/* Max Players */}
-        <YStack space="$2">
-          <Text fontSize="$base" color="$textMuted">
-            Max Players
-          </Text>
-          <XStack space="$2" flexWrap="wrap">
-            {PLAYER_COUNTS.map((count) => (
-              <PlayerCountOption
-                key={count}
-                count={count}
-                selected={maxPlayers === count}
-                onSelect={() => setMaxPlayers(count)}
-              />
-            ))}
-          </XStack>
-        </YStack>
-
-        {/* Game Mode */}
-        <YStack space="$2">
-          <Text fontSize="$base" color="$textMuted">
-            Game Mode
-          </Text>
-          <RadioGroup value={gameMode} onValueChange={setGameMode}>
-            <YStack space="$2">
-              <Label
-                htmlFor="public"
-                paddingVertical="$2"
-                paddingHorizontal="$3"
-                borderRadius="$md"
-                backgroundColor={gameMode === 'public' ? '$surfaceHover' : 'transparent'}
-                cursor="pointer"
-              >
-                <XStack space="$3" alignItems="center">
-                  <RadioGroup.Item value="public" id="public" size="$3">
-                    <RadioGroup.Indicator />
-                  </RadioGroup.Item>
-                  <YStack>
-                    <Text>Public</Text>
-                    <Text fontSize="$sm" color="$textMuted">
-                      Anyone can join
-                    </Text>
-                  </YStack>
-                </XStack>
-              </Label>
-
-              <Label
-                htmlFor="private"
-                paddingVertical="$2"
-                paddingHorizontal="$3"
-                borderRadius="$md"
-                backgroundColor={gameMode === 'private' ? '$surfaceHover' : 'transparent'}
-                cursor="pointer"
-              >
-                <XStack space="$3" alignItems="center">
-                  <RadioGroup.Item value="private" id="private" size="$3">
-                    <RadioGroup.Indicator />
-                  </RadioGroup.Item>
-                  <YStack>
-                    <Text>Private</Text>
-                    <Text fontSize="$sm" color="$textMuted">
-                      Invite only
-                    </Text>
-                  </YStack>
-                </XStack>
-              </Label>
-            </YStack>
-          </RadioGroup>
-        </YStack>
-      </Card>
-
-      {/* Create Button */}
-      <Button
-        size="$5"
-        onPress={handleCreateGame}
-        loading={createGameMutation.isPending}
-        disabled={!gameName.trim() || createGameMutation.isPending}
-        fullWidth
+    <Stack flex={1} backgroundColor="$background" position="relative">
+      {/* Animated background */}
+      <Stack
+        position="absolute"
+        top={0}
+        left={0}
+        right={0}
+        bottom={0}
+        opacity={0.03}
+        pointerEvents="none"
       >
-        Create Game
-      </Button>
-    </YStack>
+        <Stack
+          style={{
+            background: `
+              radial-gradient(circle at 20% 20%, rgba(0, 212, 255, 0.3) 0%, transparent 40%),
+              radial-gradient(circle at 80% 60%, rgba(255, 0, 255, 0.3) 0%, transparent 40%),
+              radial-gradient(circle at 50% 80%, rgba(0, 255, 136, 0.3) 0%, transparent 40%)
+            `,
+            animation: 'bgFloat 20s ease-in-out infinite',
+          }}
+          width="100%"
+          height="100%"
+        />
+      </Stack>
+
+      <YStack flex={1} padding="$5" space="$6" maxWidth={800} alignSelf="center" width="100%">
+        <YStack space="$3" alignItems="center">
+          <Text
+            fontSize={48}
+            fontWeight="900"
+            textAlign="center"
+            style={{
+              fontFamily: 'Orbitron, monospace',
+              background: 'linear-gradient(135deg, #00D4FF 0%, #00F0FF 50%, #00D4FF 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              textShadow: '0 0 60px rgba(0, 212, 255, 0.5)',
+              letterSpacing: 2,
+            }}
+          >
+            CREATE NEW GAME
+          </Text>
+          <Text
+            color="$textMuted"
+            fontSize={18}
+            textAlign="center"
+            opacity={0.8}
+          >
+            Set up your battlefield and invite players to join
+          </Text>
+        </YStack>
+
+        <Card
+          padding="$6"
+          space="$5"
+          style={{
+            background: 'linear-gradient(135deg, rgba(18, 18, 26, 0.95) 0%, rgba(10, 10, 15, 0.95) 100%)',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
+          }}
+        >
+          {/* Game Name */}
+          <YStack space="$3">
+            <Text
+              fontSize={20}
+              fontWeight="bold"
+              color="$neonCyan"
+              style={{ fontFamily: 'Orbitron, monospace' }}
+            >
+              GAME NAME
+            </Text>
+            <Input
+              placeholder="Epic Grid Battle"
+              value={gameName}
+              onChangeText={setGameName}
+              fullWidth
+              maxLength={50}
+              style={{
+                background: 'rgba(0, 0, 0, 0.3)',
+                borderColor: 'rgba(0, 212, 255, 0.3)',
+                fontSize: 18,
+                paddingVertical: 16,
+              }}
+            />
+          </YStack>
+
+          {/* Board Size */}
+          <YStack space="$3">
+            <Text
+              fontSize={20}
+              fontWeight="bold"
+              color="$neonCyan"
+              style={{ fontFamily: 'Orbitron, monospace' }}
+            >
+              BOARD SIZE
+            </Text>
+            <XStack space="$3" flexWrap="wrap" justifyContent="center">
+              {BOARD_SIZES.map((size) => (
+                <BoardSizeOption
+                  key={size.value}
+                  {...size}
+                  selected={boardSize === size.value}
+                  onSelect={() => setBoardSize(size.value)}
+                />
+              ))}
+            </XStack>
+          </YStack>
+
+          {/* Max Players */}
+          <YStack space="$3">
+            <Text
+              fontSize={20}
+              fontWeight="bold"
+              color="$neonCyan"
+              style={{ fontFamily: 'Orbitron, monospace' }}
+            >
+              MAX PLAYERS
+            </Text>
+            <XStack space="$3" flexWrap="wrap" justifyContent="center">
+              {PLAYER_COUNTS.map((count) => (
+                <PlayerCountOption
+                  key={count}
+                  count={count}
+                  selected={maxPlayers === count}
+                  onSelect={() => setMaxPlayers(count)}
+                />
+              ))}
+            </XStack>
+          </YStack>
+
+          {/* Game Mode */}
+          <YStack space="$3">
+            <Text
+              fontSize={20}
+              fontWeight="bold"
+              color="$neonCyan"
+              style={{ fontFamily: 'Orbitron, monospace' }}
+            >
+              GAME MODE
+            </Text>
+            <RadioGroup value={gameMode} onValueChange={setGameMode}>
+              <YStack space="$3">
+                <Label
+                  htmlFor="public"
+                  padding="$4"
+                  borderRadius={12}
+                  cursor="pointer"
+                  style={{
+                    background: gameMode === 'public'
+                      ? 'linear-gradient(135deg, rgba(0, 212, 255, 0.15) 0%, rgba(0, 212, 255, 0.08) 100%)'
+                      : 'rgba(255, 255, 255, 0.02)',
+                    border: gameMode === 'public'
+                      ? '2px solid rgba(0, 212, 255, 0.5)'
+                      : '2px solid rgba(255, 255, 255, 0.1)',
+                    boxShadow: gameMode === 'public'
+                      ? '0 0 20px rgba(0, 212, 255, 0.3)'
+                      : 'none',
+                  }}
+                >
+                  <XStack space="$4" alignItems="center">
+                    <RadioGroup.Item value="public" id="public" size="$3">
+                      <RadioGroup.Indicator />
+                    </RadioGroup.Item>
+                    <YStack>
+                      <Text fontSize={18} fontWeight="bold">PUBLIC GAME</Text>
+                      <Text fontSize={14} color="$textMuted">
+                        Anyone can join from the lobby
+                      </Text>
+                    </YStack>
+                  </XStack>
+                </Label>
+
+                <Label
+                  htmlFor="private"
+                  padding="$4"
+                  borderRadius={12}
+                  cursor="pointer"
+                  style={{
+                    background: gameMode === 'private'
+                      ? 'linear-gradient(135deg, rgba(255, 0, 128, 0.15) 0%, rgba(255, 0, 128, 0.08) 100%)'
+                      : 'rgba(255, 255, 255, 0.02)',
+                    border: gameMode === 'private'
+                      ? '2px solid rgba(255, 0, 128, 0.5)'
+                      : '2px solid rgba(255, 255, 255, 0.1)',
+                    boxShadow: gameMode === 'private'
+                      ? '0 0 20px rgba(255, 0, 128, 0.3)'
+                      : 'none',
+                  }}
+                >
+                  <XStack space="$4" alignItems="center">
+                    <RadioGroup.Item value="private" id="private" size="$3">
+                      <RadioGroup.Indicator />
+                    </RadioGroup.Item>
+                    <YStack>
+                      <Text fontSize={18} fontWeight="bold">PRIVATE GAME</Text>
+                      <Text fontSize={14} color="$textMuted">
+                        Invite only with secret code
+                      </Text>
+                    </YStack>
+                  </XStack>
+                </Label>
+              </YStack>
+            </RadioGroup>
+          </YStack>
+        </Card>
+
+        {/* Create Button */}
+        <Button
+          size="$6"
+          onPress={handleCreateGame}
+          loading={createGameMutation.isPending}
+          disabled={!gameName.trim() || createGameMutation.isPending}
+          fullWidth
+          style={{
+            paddingVertical: 20,
+            fontSize: 20,
+            fontWeight: '900',
+            background: !gameName.trim()
+              ? 'linear-gradient(135deg, #333333 0%, #222222 100%)'
+              : 'linear-gradient(135deg, #00FF88 0%, #00CC6A 100%)',
+            boxShadow: gameName.trim()
+              ? '0 4px 30px rgba(0, 255, 136, 0.5)'
+              : 'none',
+            textTransform: 'uppercase',
+            letterSpacing: 2,
+            fontFamily: 'Orbitron, monospace',
+          }}
+        >
+          CREATE GAME
+        </Button>
+      </YStack>
+    </Stack>
   );
 }
 
-function BoardSizeOption({ 
-  value, 
-  label, 
-  recommended, 
-  selected, 
-  onSelect 
+function BoardSizeOption({
+  value,
+  label,
+  recommended,
+  selected,
+  onSelect
 }: {
   value: string;
   label: string;
@@ -178,30 +290,59 @@ function BoardSizeOption({
 }) {
   return (
     <Card
-      variant={selected ? 'elevated' : 'outlined'}
       interactive
       onPress={onSelect}
-      padding="$3"
-      minWidth={120}
-      borderColor={selected ? '$neonBlue' : '$borderColor'}
-      backgroundColor={selected ? '$surfaceHover' : '$surface'}
+      padding="$4"
+      minWidth={140}
+      style={{
+        background: selected
+          ? 'linear-gradient(135deg, rgba(0, 212, 255, 0.15) 0%, rgba(0, 212, 255, 0.08) 100%)'
+          : 'rgba(255, 255, 255, 0.02)',
+        borderColor: selected ? '#00D4FF' : 'rgba(255, 255, 255, 0.1)',
+        borderWidth: 2,
+        boxShadow: selected
+          ? '0 0 25px rgba(0, 212, 255, 0.4), inset 0 0 15px rgba(0, 212, 255, 0.2)'
+          : '0 4px 15px rgba(0, 0, 0, 0.3)',
+      }}
     >
-      <YStack alignItems="center" space="$1">
-        <Text fontSize="$lg" fontWeight="bold" color={selected ? '$neonBlue' : '$white'}>
+      <YStack alignItems="center" space="$2">
+        <Text
+          fontSize={24}
+          fontWeight="900"
+          color={selected ? '$neonBlue' : '$white'}
+          style={{ fontFamily: 'Orbitron, monospace' }}
+        >
           {label}
         </Text>
-        <Text fontSize="$xs" color="$textMuted">
-          {recommended}
-        </Text>
+        <Stack
+          paddingHorizontal="$2"
+          paddingVertical="$1"
+          borderRadius={6}
+          style={{
+            background: selected
+              ? 'rgba(0, 212, 255, 0.2)'
+              : 'rgba(255, 255, 255, 0.05)',
+          }}
+        >
+          <Text
+            fontSize={12}
+            color={selected ? '$neonBlue' : '$textMuted'}
+            fontWeight="bold"
+            textTransform="uppercase"
+            letterSpacing={0.5}
+          >
+            {recommended}
+          </Text>
+        </Stack>
       </YStack>
     </Card>
   );
 }
 
-function PlayerCountOption({ 
-  count, 
-  selected, 
-  onSelect 
+function PlayerCountOption({
+  count,
+  selected,
+  onSelect
 }: {
   count: number;
   selected: boolean;
@@ -209,26 +350,38 @@ function PlayerCountOption({
 }) {
   return (
     <Stack
-      width={48}
-      height={48}
-      borderRadius="$md"
-      borderWidth={2}
-      borderColor={selected ? '$neonBlue' : '$borderColor'}
-      backgroundColor={selected ? '$surfaceHover' : '$surface'}
+      width={64}
+      height={64}
+      borderRadius={12}
       alignItems="center"
       justifyContent="center"
       cursor="pointer"
       animation="quick"
       onPress={onSelect}
+      style={{
+        background: selected
+          ? 'linear-gradient(135deg, rgba(0, 255, 136, 0.2) 0%, rgba(0, 255, 136, 0.1) 100%)'
+          : 'rgba(255, 255, 255, 0.02)',
+        borderWidth: 2,
+        borderColor: selected ? '#00FF88' : 'rgba(255, 255, 255, 0.1)',
+        boxShadow: selected
+          ? '0 0 20px rgba(0, 255, 136, 0.4), inset 0 0 10px rgba(0, 255, 136, 0.2)'
+          : '0 4px 10px rgba(0, 0, 0, 0.3)',
+      }}
       hoverStyle={{
-        borderColor: '$neonBlue',
-        scale: 1.05,
+        scale: 1.1,
+        borderColor: selected ? '$neonGreen' : '$neonBlue',
       }}
       pressStyle={{
         scale: 0.95,
       }}
     >
-      <Text fontWeight="bold" color={selected ? '$neonBlue' : '$white'}>
+      <Text
+        fontSize={28}
+        fontWeight="900"
+        color={selected ? '$neonGreen' : '$white'}
+        style={{ fontFamily: 'Orbitron, monospace' }}
+      >
         {count}
       </Text>
     </Stack>

@@ -7,7 +7,7 @@ import App from './App.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <TamaguiProvider config={config} defaultTheme="dark_game">
+    <TamaguiProvider config={config} defaultTheme="dark">
       <App />
     </TamaguiProvider>
   </StrictMode>,

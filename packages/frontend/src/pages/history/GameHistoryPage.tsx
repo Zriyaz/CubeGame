@@ -81,8 +81,15 @@ export function GameHistoryPage() {
   };
 
   return (
-    <ScrollView flex={1} backgroundColor="$background">
-      <YStack padding="$4" gap="$4" maxWidth={1000} margin="0 auto" width="100%">
+    <Stack flex={1} backgroundColor="$background">
+      <ScrollView 
+        flex={1}
+        contentContainerStyle={{
+          flexGrow: 1,
+        }}
+      >
+        <Stack flex={1} alignItems="center" width="100%">
+          <YStack padding="$5" gap="$5" width="100%" maxWidth={1200}>
         <YStack gap="$2">
           <Text fontSize="$2xl" fontWeight="bold">Game History</Text>
           <Text color="$textMuted">Review your past battles</Text>
@@ -158,8 +165,10 @@ export function GameHistoryPage() {
             ))
           )}
         </YStack>
-      </YStack>
-    </ScrollView>
+          </YStack>
+        </Stack>
+      </ScrollView>
+    </Stack>
   );
 }
 

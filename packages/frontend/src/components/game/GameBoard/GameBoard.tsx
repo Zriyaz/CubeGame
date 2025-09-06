@@ -33,27 +33,54 @@ export const GameBoard = memo(({
 
   return (
     <Stack
-      backgroundColor="$gameBackground"
-      borderRadius="$board"
-      padding="$4"
-      elevation="$4"
+      backgroundColor="rgba(5, 5, 7, 0.95)"
+      borderRadius={20}
+      padding="$5"
       animation="lazy"
+      position="relative"
       enterStyle={{
         opacity: 0,
         scale: 0.9,
       }}
       style={{
-        boxShadow: '0 0 40px rgba(0, 255, 255, 0.2)',
+        background: 'linear-gradient(145deg, rgba(10, 10, 15, 0.95) 0%, rgba(18, 18, 26, 0.95) 100%)',
+        boxShadow: `
+          0 0 80px rgba(0, 212, 255, 0.15),
+          0 0 40px rgba(0, 212, 255, 0.1),
+          inset 0 0 60px rgba(0, 212, 255, 0.05),
+          0 10px 40px rgba(0, 0, 0, 0.8)
+        `,
+        border: '2px solid rgba(0, 212, 255, 0.2)',
       }}
     >
+      {/* Grid background effect */}
+      <Stack
+        position="absolute"
+        top={0}
+        left={0}
+        right={0}
+        bottom={0}
+        opacity={0.1}
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(0, 212, 255, 0.1) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0, 212, 255, 0.1) 1px, transparent 1px)
+          `,
+          backgroundSize: `${cellSize}px ${cellSize}px`,
+          backgroundPosition: 'center',
+          borderRadius: 18,
+        }}
+      />
+      
       <YStack
         ref={animationParent}
-        space="$1"
+        space={2}
         alignItems="center"
         justifyContent="center"
+        position="relative"
       >
         {Array.from({ length: size }).map((_, row) => (
-          <XStack key={row} space="$1">
+          <XStack key={row} space={2}>
             {Array.from({ length: size }).map((_, col) => (
               <GameCell
                 key={`${row}-${col}`}

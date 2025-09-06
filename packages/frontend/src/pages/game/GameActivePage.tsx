@@ -148,7 +148,8 @@ export function GameActivePage() {
       </XStack>
 
       {/* Main Game Area */}
-      <XStack flex={1}>
+      <Stack flex={1} alignItems="center">
+        <XStack flex={1} width="100%" maxWidth={1600}>
         {/* Left Sidebar - Players */}
         <YStack
           width={280}
@@ -303,7 +304,8 @@ export function GameActivePage() {
             </YStack>
           </YStack>
         </YStack>
-      </XStack>
+        </XStack>
+      </Stack>
     </Stack>
   );
 }

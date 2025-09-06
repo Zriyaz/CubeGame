@@ -160,8 +160,15 @@ export function ProfilePage() {
   }
 
   return (
-    <ScrollView flex={1} backgroundColor="$background">
-      <YStack padding="$4" space="$4" maxWidth={1000} margin="0 auto" width="100%">
+    <Stack flex={1} backgroundColor="$background">
+      <ScrollView 
+        flex={1}
+        contentContainerStyle={{
+          flexGrow: 1,
+        }}
+      >
+        <Stack flex={1} alignItems="center" width="100%">
+          <YStack padding="$5" space="$5" width="100%" maxWidth={1200}>
         {/* Profile Header */}
         <Card variant="elevated" padding="$5">
           <XStack space="$4" alignItems="center" flexWrap="wrap">
@@ -312,8 +319,10 @@ export function ProfilePage() {
             ))}
           </YStack>
         </Card>
-      </YStack>
-    </ScrollView>
+          </YStack>
+        </Stack>
+      </ScrollView>
+    </Stack>
   );
 }
 

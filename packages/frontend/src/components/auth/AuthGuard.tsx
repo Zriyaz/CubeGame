@@ -21,7 +21,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
 
   if (!isAuthenticated) {
     // Redirect to login but save the attempted location
-    return <Navigate to={routes.login} state={{ from: location }} replace />;
+    return <Navigate to={routes.landing} state={{ from: location }} replace />;
   }
 
   return <>{children || <Outlet />}</>;

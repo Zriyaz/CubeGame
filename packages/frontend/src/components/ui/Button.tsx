@@ -16,36 +16,64 @@ export interface ButtonProps {
 const StyledButton = styled(TamaguiButton, {
   name: 'Button',
   animation: 'quick',
+  fontFamily: '$heading',
+  textTransform: 'uppercase',
+  letterSpacing: 1.5,
+  borderRadius: 8,
+  position: 'relative',
+  overflow: 'hidden',
+  
+  // Add pseudo-element for glow effect
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: -100,
+    width: '100%',
+    height: '100%',
+    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+    transition: 'left 0.5s',
+  },
+  
+  '&:hover::before': {
+    left: '100%',
+  },
   
   variants: {
     variant: {
       primary: {
         backgroundColor: '$neonBlue',
-        color: '$black',
+        color: '#000',
         borderWidth: 2,
         borderColor: '$neonBlue',
         fontWeight: 'bold',
+        boxShadow: '0 0 20px rgba(0, 212, 255, 0.5), inset 0 0 20px rgba(0, 212, 255, 0.1)',
         
         hoverStyle: {
-          backgroundColor: '$neonBlue',
-          opacity: 0.9,
+          backgroundColor: '$neonCyan',
+          borderColor: '$neonCyan',
+          boxShadow: '0 0 30px rgba(0, 240, 255, 0.7), inset 0 0 20px rgba(0, 240, 255, 0.2)',
           scale: 1.02,
         },
         
         pressStyle: {
           scale: 0.98,
+          boxShadow: '0 0 10px rgba(0, 212, 255, 0.3), inset 0 0 10px rgba(0, 212, 255, 0.1)',
         },
       },
       
       secondary: {
-        backgroundColor: 'transparent',
+        backgroundColor: 'rgba(0, 212, 255, 0.1)',
         color: '$neonBlue',
         borderWidth: 2,
-        borderColor: '$neonBlue',
+        borderColor: 'rgba(0, 212, 255, 0.5)',
+        backdropFilter: 'blur(10px)',
         
         hoverStyle: {
-          backgroundColor: 'rgba(0, 255, 255, 0.1)',
+          backgroundColor: 'rgba(0, 212, 255, 0.2)',
+          borderColor: '$neonBlue',
           scale: 1.02,
+          boxShadow: '0 0 20px rgba(0, 212, 255, 0.3)',
         },
         
         pressStyle: {
@@ -55,11 +83,12 @@ const StyledButton = styled(TamaguiButton, {
       
       ghost: {
         backgroundColor: 'transparent',
-        color: '$white',
+        color: '$textSecondary',
         borderWidth: 0,
         
         hoverStyle: {
-          backgroundColor: 'rgba(255, 255, 255, 0.1)',
+          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+          color: '$textPrimary',
         },
         
         pressStyle: {
@@ -68,15 +97,16 @@ const StyledButton = styled(TamaguiButton, {
       },
       
       danger: {
-        backgroundColor: '$error',
-        color: '$white',
+        backgroundColor: 'rgba(255, 51, 102, 0.1)',
+        color: '$neonRed',
         borderWidth: 2,
-        borderColor: '$error',
+        borderColor: 'rgba(255, 51, 102, 0.5)',
         
         hoverStyle: {
-          backgroundColor: '$error',
-          opacity: 0.9,
+          backgroundColor: 'rgba(255, 51, 102, 0.2)',
+          borderColor: '$neonRed',
           scale: 1.02,
+          boxShadow: '0 0 20px rgba(255, 51, 102, 0.5)',
         },
         
         pressStyle: {

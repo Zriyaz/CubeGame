@@ -106,6 +106,18 @@ export class GameSoundManager {
         case 'defeat':
           webAudioSounds.playDefeat();
           break;
+        case 'powerUp':
+          webAudioSounds.playPowerUp();
+          break;
+        case 'powerDown':
+          webAudioSounds.playPowerDown();
+          break;
+        case 'error':
+          webAudioSounds.playError();
+          break;
+        case 'backgroundMusic':
+          webAudioSounds.playBackgroundMusic();
+          break;
         default:
           console.debug(`No Web Audio fallback for sound: ${soundName}`);
       }
@@ -146,6 +158,11 @@ export class GameSoundManager {
   }
   
   stop(soundName: string, id?: number) {
+    // Handle background music specially
+    if (soundName === 'backgroundMusic') {
+      webAudioSounds.stopBackgroundMusic();
+    }
+    
     const sound = this.sounds.get(soundName);
     if (sound) {
       if (id) {

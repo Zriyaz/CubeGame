@@ -1,0 +1,54 @@
+# Render Blueprint - Infrastructure as Code
+# This file automates the deployment of all services
+
+databases:
+  - name: cubegame-db
+    plan: free
+    databaseName: cubegame
+    user: cubegame
+
+services:
+  # Backend API & WebSocket Server
+  - type: web
+    name: cubegame-backend
+    env: node
+    plan: free
+    buildCommand: cd packages/backend && npm install && npm run build
+    startCommand: cd packages/backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: cubegame-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: REDIS_URL
+        sync: false # Add manually from Upstash
+      - key: GOOGLE_CLIENT_ID
+        sync: false # Add manually
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false # Add manually
+      - key: GOOGLE_CALLBACK_URL
+        value: https://cubegame-backend.onrender.com/api/auth/google/callback
+      - key: FRONTEND_URL
+        value: https://cubegame-frontend.onrender.com
+
+  # Frontend Static Site
+  - type: web
+    name: cubegame-frontend
+    env: static
+    plan: free
+    buildCommand: cd packages/frontend && npm install && npm run build
+    staticPublishPath: ./packages/frontend/dist
+    pullRequestPreviewsEnabled: true
+    envVars:
+      - key: VITE_API_URL
+        value: https://cubegame-backend.onrender.com
+      - key: VITE_WS_URL
+        value: wss://cubegame-backend.onrender.com

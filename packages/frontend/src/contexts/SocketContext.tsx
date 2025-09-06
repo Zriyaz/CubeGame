@@ -119,7 +119,7 @@ export function SocketProvider({ children }: SocketProviderProps) {
         case ERROR_CODES.AUTH_FAILED:
         case ERROR_CODES.INVALID_TOKEN:
           // Redirect to login
-          navigate(routes.login);
+          navigate(routes.landing);
           break;
         case ERROR_CODES.GAME_NOT_FOUND:
           // Redirect to dashboard

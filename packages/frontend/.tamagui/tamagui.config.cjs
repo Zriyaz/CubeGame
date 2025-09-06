@@ -2378,25 +2378,57 @@ var animations = createAnimations({
   cellular: "cubic-bezier(0.4, 0, 0.2, 1)"
 });
 var gameColors = {
-  // Neon colors for gaming feel
-  neonBlue: "hsl(180, 100%, 50%)",
-  neonPink: "hsl(300, 100%, 50%)",
-  neonGreen: "hsl(120, 100%, 50%)",
-  neonYellow: "hsl(60, 100%, 50%)",
-  neonOrange: "hsl(30, 100%, 50%)",
-  neonPurple: "hsl(270, 100%, 50%)",
-  // Player colors
-  player1: "hsl(0, 100%, 60%)",
-  player2: "hsl(210, 100%, 60%)",
-  player3: "hsl(120, 100%, 60%)",
-  player4: "hsl(60, 100%, 60%)",
-  player5: "hsl(280, 100%, 60%)",
-  player6: "hsl(30, 100%, 60%)",
-  // Game UI colors
-  gridLine: "hsl(0, 0%, 20%)",
-  cellEmpty: "hsl(0, 0%, 10%)",
-  cellHover: "hsl(0, 0%, 15%)",
-  gameBackground: "hsl(0, 0%, 5%)"
+  // Neon accent colors with glow effect
+  neonBlue: "#00D4FF",
+  neonCyan: "#00F0FF",
+  neonPink: "#FF0080",
+  neonGreen: "#00FF88",
+  neonYellow: "#FFD700",
+  neonOrange: "#FF6B00",
+  neonPurple: "#B200FF",
+  neonRed: "#FF0040",
+  // Player colors with better contrast
+  player1: "#FF3366",
+  // Vibrant Red-Pink
+  player2: "#00BFFF",
+  // Sky Blue
+  player3: "#00FF7F",
+  // Spring Green
+  player4: "#FFEB3B",
+  // Material Yellow
+  player5: "#E040FB",
+  // Purple Accent
+  player6: "#FF6E40",
+  // Deep Orange
+  // Dark gaming UI colors
+  background: "#0A0A0F",
+  // Very dark blue-black
+  surface: "#12121A",
+  // Slightly lighter surface
+  surfaceHover: "#1A1A25",
+  // Hover state
+  surfacePress: "#222230",
+  // Press state
+  // Grid and game board
+  gridLine: "rgba(255, 255, 255, 0.05)",
+  gridLineActive: "rgba(0, 212, 255, 0.2)",
+  cellEmpty: "rgba(255, 255, 255, 0.02)",
+  cellHover: "rgba(0, 212, 255, 0.1)",
+  gameBackground: "#050507",
+  boardShadow: "rgba(0, 212, 255, 0.4)",
+  // Text colors
+  textPrimary: "#FFFFFF",
+  textSecondary: "#B8B8C8",
+  textMuted: "#6B6B7B",
+  // Status colors
+  success: "#00FF88",
+  error: "#FF3366",
+  warning: "#FFD700",
+  info: "#00D4FF",
+  // Borders
+  borderColor: "rgba(255, 255, 255, 0.08)",
+  borderColorHover: "rgba(0, 212, 255, 0.3)",
+  borderColorFocus: "rgba(0, 212, 255, 0.5)"
 };
 var gameTokens = {
   size: {
@@ -2421,21 +2453,46 @@ var config2 = createTamagui({
   ...config,
   animations,
   themes: {
-    ...config.themes,
-    dark_game: {
+    dark: {
       ...config.themes.dark,
-      background: gameColors.gameBackground,
-      backgroundHover: gameColors.cellHover,
-      backgroundPress: gameColors.cellEmpty,
-      backgroundFocus: gameColors.cellHover,
-      borderColor: gameColors.gridLine,
-      borderColorHover: gameColors.neonBlue,
-      borderColorPress: gameColors.neonBlue,
-      borderColorFocus: gameColors.neonBlue,
-      ...gameColors
+      // Core colors
+      background: gameColors.background,
+      backgroundHover: gameColors.surfaceHover,
+      backgroundPress: gameColors.surfacePress,
+      backgroundFocus: gameColors.surfaceHover,
+      backgroundStrong: gameColors.gameBackground,
+      backgroundTransparent: "rgba(10, 10, 15, 0.8)",
+      // Surface colors
+      surface: gameColors.surface,
+      surfaceHover: gameColors.surfaceHover,
+      surfacePress: gameColors.surfacePress,
+      // Text colors
+      color: gameColors.textPrimary,
+      colorHover: gameColors.textPrimary,
+      colorPress: gameColors.textSecondary,
+      colorFocus: gameColors.textPrimary,
+      // Borders
+      borderColor: gameColors.borderColor,
+      borderColorHover: gameColors.borderColorHover,
+      borderColorPress: gameColors.borderColorFocus,
+      borderColorFocus: gameColors.borderColorFocus,
+      // Include all game colors
+      ...gameColors,
+      // Override some specific colors for dark theme
+      text: gameColors.textPrimary,
+      textMuted: gameColors.textMuted,
+      // Card colors
+      cardBackground: gameColors.surface,
+      cardBorder: gameColors.borderColor,
+      // Button colors
+      buttonBackground: gameColors.surface,
+      buttonBackgroundHover: gameColors.surfaceHover,
+      buttonBackgroundPress: gameColors.surfacePress,
+      buttonText: gameColors.textPrimary
     },
-    light_game: {
+    light: {
       ...config.themes.light,
+      // Keep light theme for now but we'll use dark by default
       ...gameColors
     }
   },

@@ -183,8 +183,13 @@ export function GameRoomPage() {
 
   return (
     <YStack flex={1} backgroundColor="$background">
-      <ScrollView>
-        <YStack padding="$4" space="$4" maxWidth={1200} margin="0 auto" width="100%">
+      <ScrollView 
+        contentContainerStyle={{
+          flexGrow: 1,
+        }}
+      >
+        <Stack flex={1} alignItems="center" width="100%">
+          <YStack padding="$5" space="$5" width="100%" maxWidth={1200}>
           {/* Game Header */}
           <Card variant="elevated" padding="$4">
             <XStack justifyContent="space-between" alignItems="center" flexWrap="wrap" space="$4">
@@ -316,24 +321,52 @@ export function GameRoomPage() {
                     <Text fontSize="$lg" fontWeight="bold">Game Chat</Text>
                   </XStack>
                   
-                  <ScrollView flex={1} padding="$3">
-                    <YStack space="$2">
+                  <ScrollView 
+                    flex={1} 
+                    padding="$4"
+                    style={{
+                      background: 'rgba(0, 0, 0, 0.2)',
+                    }}
+                  >
+                    <YStack space="$3">
                       {chatMessages.map((msg) => (
-                        <YStack key={msg.id} space="$1">
-                          <XStack space="$2" alignItems="baseline">
-                            <Text fontSize="$sm" fontWeight="bold" color="$neonBlue">
+                        <YStack 
+                          key={msg.id} 
+                          space="$1.5"
+                          padding="$3"
+                          borderRadius={8}
+                          style={{
+                            background: 'rgba(255, 255, 255, 0.03)',
+                            borderLeft: '3px solid #00D4FF',
+                          }}
+                        >
+                          <XStack space="$3" alignItems="baseline">
+                            <Text 
+                              fontSize={14} 
+                              fontWeight="bold" 
+                              color="$neonBlue"
+                              style={{ fontFamily: 'Rajdhani, monospace' }}
+                            >
                               {msg.userName}
                             </Text>
-                            <Text fontSize="$xs" color="$textMuted">
+                            <Text fontSize={11} color="$textMuted" opacity={0.6}>
                               {msg.timestamp.toLocaleTimeString()}
                             </Text>
                           </XStack>
-                          <Text fontSize="$sm">{msg.message}</Text>
+                          <Text fontSize={15} color="$text" opacity={0.9}>
+                            {msg.message}
+                          </Text>
                         </YStack>
                       ))}
                       
                       {chatMessages.length === 0 && (
-                        <Text color="$textMuted" textAlign="center" paddingVertical="$8">
+                        <Text 
+                          color="$textMuted" 
+                          textAlign="center" 
+                          paddingVertical="$8"
+                          fontSize={16}
+                          opacity={0.5}
+                        >
                           No messages yet. Say hello!
                         </Text>
                       )}
@@ -365,7 +398,8 @@ export function GameRoomPage() {
               </Card>
             </YStack>
           </XStack>
-        </YStack>
+          </YStack>
+        </Stack>
       </ScrollView>
     </YStack>
   );
@@ -379,13 +413,37 @@ interface ExtendedPlayer extends Player {
 
 function PlayerCard({ player }: { player: ExtendedPlayer }) {
   return (
-    <Card padding="$3" backgroundColor={player.isReady ? '$surfaceHover' : '$surface'}>
+    <Card 
+      padding="$4" 
+      style={{
+        background: player.isReady 
+          ? 'linear-gradient(135deg, rgba(0, 255, 136, 0.08) 0%, rgba(0, 255, 136, 0.04) 100%)'
+          : 'rgba(255, 255, 255, 0.02)',
+        borderColor: player.isReady ? 'rgba(0, 255, 136, 0.3)' : 'rgba(255, 255, 255, 0.1)',
+        borderWidth: 1,
+        boxShadow: player.isReady 
+          ? '0 0 20px rgba(0, 255, 136, 0.15)'
+          : '0 4px 15px rgba(0, 0, 0, 0.3)',
+      }}
+    >
       <XStack space="$3" alignItems="center">
         <Stack position="relative">
-          <Avatar size="$5" circular borderWidth={3} borderColor={player.color}>
+          <Avatar 
+            size={56} 
+            circular 
+            borderWidth={3} 
+            style={{
+              borderColor: player.color,
+              boxShadow: `0 0 20px ${player.color}66`,
+            }}
+          >
             <Avatar.Image src={player.avatarUrl} />
-            <Avatar.Fallback backgroundColor={player.color}>
-              <Text color="$white" fontWeight="bold">
+            <Avatar.Fallback 
+              style={{
+                background: `linear-gradient(135deg, ${player.color} 0%, ${player.color}CC 100%)`,
+              }}
+            >
+              <Text color="$white" fontWeight="900" fontSize={22}>
                 {player.name[0].toUpperCase()}
               </Text>
             </Avatar.Fallback>
@@ -394,45 +452,114 @@ function PlayerCard({ player }: { player: ExtendedPlayer }) {
           {player.isHost && (
             <Stack
               position="absolute"
-              top={-4}
-              right={-4}
-              backgroundColor="$neonYellow"
-              borderRadius={12}
-              padding="$1"
+              top={-6}
+              right={-6}
+              width={26}
+              height={26}
+              borderRadius={13}
+              alignItems="center"
+              justifyContent="center"
+              style={{
+                background: 'linear-gradient(135deg, #FFDD00 0%, #FFA500 100%)',
+                boxShadow: '0 0 15px rgba(255, 221, 0, 0.7)',
+              }}
             >
-              <Crown size={12} color="$black" />
+              <Crown size={14} color="#000" strokeWidth={2} />
             </Stack>
           )}
         </Stack>
         
-        <YStack flex={1} space="$1">
+        <YStack flex={1} space="$2">
           <XStack space="$2" alignItems="center">
-            <Text fontWeight="bold">{player.name}</Text>
+            <Text 
+              fontWeight="900" 
+              fontSize={18}
+              style={{ fontFamily: 'Rajdhani, monospace' }}
+            >
+              {player.name}
+            </Text>
             {player.isYou && (
-              <Text fontSize="$xs" color="$neonGreen">(You)</Text>
+              <Stack
+                paddingHorizontal="$2"
+                paddingVertical="$0.5"
+                borderRadius={6}
+                backgroundColor="rgba(0, 255, 136, 0.2)"
+              >
+                <Text fontSize={11} color="$neonGreen" fontWeight="bold">YOU</Text>
+              </Stack>
             )}
             {player.isHost && (
-              <Text fontSize="$xs" color="$neonYellow">(Host)</Text>
+              <Stack
+                paddingHorizontal="$2"
+                paddingVertical="$0.5"
+                borderRadius={6}
+                backgroundColor="rgba(255, 221, 0, 0.2)"
+              >
+                <Text fontSize={11} color="$neonYellow" fontWeight="bold">HOST</Text>
+              </Stack>
             )}
           </XStack>
           
           <XStack space="$2" alignItems="center">
             <Stack
-              width={12}
-              height={12}
-              borderRadius={6}
-              backgroundColor={player.color}
+              width={14}
+              height={14}
+              borderRadius={7}
+              style={{
+                backgroundColor: player.color,
+                boxShadow: `0 0 10px ${player.color}`,
+              }}
             />
-            <Text fontSize="$sm" color="$textMuted">
-              {player.isReady ? 'Ready' : 'Not Ready'}
-            </Text>
+            <Stack
+              paddingHorizontal="$2.5"
+              paddingVertical="$1"
+              borderRadius={6}
+              style={{
+                background: player.isReady 
+                  ? 'rgba(0, 255, 136, 0.2)'
+                  : 'rgba(255, 255, 255, 0.05)',
+              }}
+            >
+              <Text 
+                fontSize={12} 
+                color={player.isReady ? "$neonGreen" : "$textMuted"}
+                fontWeight="bold"
+                textTransform="uppercase"
+                letterSpacing={0.5}
+              >
+                {player.isReady ? 'READY' : 'NOT READY'}
+              </Text>
+            </Stack>
           </XStack>
         </YStack>
         
         {player.isReady ? (
-          <CheckCircle size={24} color="$success" />
+          <Stack
+            width={32}
+            height={32}
+            borderRadius={16}
+            alignItems="center"
+            justifyContent="center"
+            style={{
+              background: 'linear-gradient(135deg, #00FF88 0%, #00CC6A 100%)',
+              boxShadow: '0 0 20px rgba(0, 255, 136, 0.5)',
+            }}
+          >
+            <CheckCircle size={20} color="#000" strokeWidth={3} />
+          </Stack>
         ) : (
-          <Clock size={24} color="$textMuted" />
+          <Stack
+            width={32}
+            height={32}
+            borderRadius={16}
+            alignItems="center"
+            justifyContent="center"
+            backgroundColor="rgba(255, 255, 255, 0.05)"
+            borderWidth={2}
+            borderColor="rgba(255, 255, 255, 0.1)"
+          >
+            <Clock size={20} color="$textMuted" />
+          </Stack>
         )}
       </XStack>
     </Card>

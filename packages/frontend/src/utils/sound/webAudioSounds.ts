@@ -119,6 +119,273 @@ class WebAudioSounds {
     this.playTone(200, 0.3, 'sawtooth', 0.3);
   }
 
+  // Power up sound - switch turning on
+  playPowerUp() {
+    if (!this.enabled) return;
+    
+    const ctx = this.getAudioContext();
+    const oscillator = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    
+    // Rising sweep
+    oscillator.frequency.setValueAtTime(200, ctx.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.15);
+    
+    gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+    
+    oscillator.start(ctx.currentTime);
+    oscillator.stop(ctx.currentTime + 0.2);
+    
+    // Add a "click" at the end
+    setTimeout(() => this.playTone(1200, 0.05, 'square', 0.2), 150);
+  }
+
+  // Power down sound - switch turning off
+  playPowerDown() {
+    if (!this.enabled) return;
+    
+    const ctx = this.getAudioContext();
+    const oscillator = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    
+    // Falling sweep
+    oscillator.frequency.setValueAtTime(800, ctx.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.15);
+    
+    gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+    
+    oscillator.start(ctx.currentTime);
+    oscillator.stop(ctx.currentTime + 0.2);
+    
+    // Add a low "thud" at the end
+    setTimeout(() => this.playTone(80, 0.1, 'sine', 0.3), 150);
+  }
+
+  // Background music - dynamic gaming soundtrack
+  private bgMusicNodes: { oscillator: OscillatorNode; gainNode: GainNode }[] = [];
+  private bgMusicIntervals: number[] = [];
+  private sequenceStep: number = 0;
+
+  playBackgroundMusic() {
+    if (!this.enabled) return;
+    
+    this.stopBackgroundMusic(); // Stop any existing music
+    
+    const ctx = this.getAudioContext();
+    const now = ctx.currentTime;
+    
+    // Create a more complex gaming soundtrack
+    // Bass line - gives the foundation
+    const createBassline = () => {
+      const bassNotes = [55, 55, 82.5, 55, 73.5, 55, 82.5, 92.5]; // A, A, E, A, D, A, E, F#
+      let bassIndex = 0;
+      
+      const playBass = () => {
+        const freq = bassNotes[bassIndex % bassNotes.length];
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const filter = ctx.createBiquadFilter();
+        
+        osc.type = 'sawtooth';
+        osc.frequency.value = freq;
+        
+        filter.type = 'lowpass';
+        filter.frequency.value = 200;
+        filter.Q.value = 15;
+        
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+        
+        gain.gain.setValueAtTime(0, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+        
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.4);
+        
+        bassIndex++;
+      };
+      
+      playBass(); // Play immediately
+      return window.setInterval(playBass, 500); // 120 BPM
+    };
+    
+    // Melody line - catchy gaming tune
+    const createMelody = () => {
+      const melodyNotes = [
+        440, 0, 523, 440,    // A, rest, C, A
+        659, 523, 440, 392,  // E, C, A, G
+        349, 0, 440, 349,    // F, rest, A, F
+        523, 440, 349, 330,  // C, A, F, E
+      ];
+      let melodyIndex = 0;
+      
+      const playMelody = () => {
+        const freq = melodyNotes[melodyIndex % melodyNotes.length];
+        if (freq > 0) { // 0 means rest
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          
+          osc.type = 'square';
+          osc.frequency.value = freq;
+          
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          
+          gain.gain.setValueAtTime(0, ctx.currentTime);
+          gain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + 0.02);
+          gain.gain.setValueAtTime(0.15, ctx.currentTime + 0.2);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+          
+          osc.start(ctx.currentTime);
+          osc.stop(ctx.currentTime + 0.25);
+        }
+        melodyIndex++;
+      };
+      
+      return window.setInterval(playMelody, 250); // 16th notes at 120 BPM
+    };
+    
+    // Arpeggiator - adds movement and energy
+    const createArpeggio = () => {
+      const chords = [
+        [220, 277, 330, 440],     // A minor
+        [196, 247, 294, 392],     // G major
+        [175, 220, 262, 349],     // F major
+        [165, 208, 247, 330],     // E minor
+      ];
+      let chordIndex = 0;
+      let noteIndex = 0;
+      
+      const playArp = () => {
+        const currentChord = chords[Math.floor(chordIndex / 16) % chords.length];
+        const freq = currentChord[noteIndex % currentChord.length];
+        
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const filter = ctx.createBiquadFilter();
+        
+        osc.type = 'sawtooth';
+        osc.frequency.value = freq * 2; // Higher octave
+        
+        filter.type = 'bandpass';
+        filter.frequency.value = freq * 2;
+        filter.Q.value = 5;
+        
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+        
+        gain.gain.setValueAtTime(0.08, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+        
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.1);
+        
+        noteIndex = (noteIndex + 1) % 4;
+        if (noteIndex === 0) chordIndex++;
+      };
+      
+      return window.setInterval(playArp, 125); // 32nd notes
+    };
+    
+    // Percussion - adds rhythm and drive
+    const createDrums = () => {
+      let drumStep = 0;
+      
+      const playDrum = () => {
+        const pattern = drumStep % 8;
+        
+        // Kick drum on 1 and 5
+        if (pattern === 0 || pattern === 4) {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          
+          osc.frequency.setValueAtTime(60, ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + 0.1);
+          
+          gain.gain.setValueAtTime(0.5, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+          
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime);
+          osc.stop(ctx.currentTime + 0.1);
+        }
+        
+        // Hi-hat on off-beats
+        if (pattern % 2 === 1) {
+          const noise = ctx.createBufferSource();
+          const noiseBuffer = ctx.createBuffer(1, ctx.sampleRate * 0.05, ctx.sampleRate);
+          const data = noiseBuffer.getChannelData(0);
+          for (let i = 0; i < data.length; i++) {
+            data[i] = Math.random() * 2 - 1;
+          }
+          noise.buffer = noiseBuffer;
+          
+          const filter = ctx.createBiquadFilter();
+          filter.type = 'highpass';
+          filter.frequency.value = 8000;
+          
+          const gain = ctx.createGain();
+          gain.gain.setValueAtTime(0.1, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
+          
+          noise.connect(filter);
+          filter.connect(gain);
+          gain.connect(ctx.destination);
+          noise.start(ctx.currentTime);
+        }
+        
+        drumStep++;
+      };
+      
+      playDrum(); // Play immediately
+      return window.setInterval(playDrum, 250); // 8th notes
+    };
+    
+    // Start all parts with slight delays for a buildup effect
+    this.bgMusicIntervals.push(createDrums());
+    
+    setTimeout(() => {
+      this.bgMusicIntervals.push(createBassline());
+    }, 2000);
+    
+    setTimeout(() => {
+      this.bgMusicIntervals.push(createArpeggio());
+    }, 4000);
+    
+    setTimeout(() => {
+      this.bgMusicIntervals.push(createMelody());
+    }, 6000);
+  }
+
+  stopBackgroundMusic() {
+    // Stop all oscillators
+    this.bgMusicNodes.forEach(({ oscillator, gainNode }) => {
+      try {
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.getAudioContext().currentTime + 0.5);
+        oscillator.stop(this.getAudioContext().currentTime + 0.5);
+      } catch (e) {
+        // Ignore if already stopped
+      }
+    });
+    this.bgMusicNodes = [];
+    
+    // Clear all intervals
+    this.bgMusicIntervals.forEach(interval => clearInterval(interval));
+    this.bgMusicIntervals = [];
+  }
+
   toggle(): boolean {
     this.enabled = !this.enabled;
     localStorage.setItem('soundEnabled', this.enabled.toString());

@@ -67,18 +67,60 @@ export function DashboardPage() {
   };
 
   return (
-    <ScrollView flex={1} backgroundColor="$background">
-      <YStack padding="$4" gap="$6" maxWidth={1200} margin="0 auto" width="100%">
-        {/* Welcome Section */}
-        <XStack justifyContent="space-between" alignItems="center">
-          <YStack gap="$2">
-            <Text fontSize="$3xl" fontWeight="bold">
-              Welcome back, {user?.name || 'Player'}!
-            </Text>
-            <Text color="$textMuted" fontSize="$lg">
-              Ready to conquer some grids?
-            </Text>
-          </YStack>
+    <Stack flex={1} position="relative" backgroundColor="$background">
+      {/* Animated background effect */}
+      <Stack
+        position="absolute"
+        top={0}
+        left={0}
+        right={0}
+        bottom={0}
+        opacity={0.05}
+        pointerEvents="none"
+      >
+        <Stack
+          style={{
+            background: `
+              radial-gradient(circle at 15% 50%, rgba(0, 255, 255, 0.3) 0%, transparent 40%),
+              radial-gradient(circle at 85% 30%, rgba(255, 0, 255, 0.3) 0%, transparent 40%),
+              radial-gradient(circle at 50% 80%, rgba(0, 255, 136, 0.3) 0%, transparent 40%)
+            `,
+            animation: 'bgFloat 20s ease-in-out infinite',
+          }}
+          width="100%"
+          height="100%"
+        />
+      </Stack>
+      
+      <ScrollView 
+        flex={1} 
+        backgroundColor="transparent"
+        contentContainerStyle={{
+          flexGrow: 1,
+        }}
+      >
+        <Stack flex={1} alignItems="center" width="100%">
+          <YStack padding="$5" gap="$6" width="100%" maxWidth={1200}>
+          {/* Welcome Section */}
+          <XStack justifyContent="space-between" alignItems="center">
+            <YStack gap="$2">
+              <Text 
+                fontSize={40} 
+                fontWeight="900"
+                style={{
+                  fontFamily: 'Orbitron, monospace',
+                  background: 'linear-gradient(135deg, #00D4FF 0%, #FF0080 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  textShadow: '0 0 60px rgba(0, 212, 255, 0.5)',
+                }}
+              >
+                Welcome back, {user?.name || 'Player'}!
+              </Text>
+              <Text color="$neonCyan" fontSize="$lg" opacity={0.8}>
+                Ready to conquer some grids?
+              </Text>
+            </YStack>
 
           <Button
             size="$3"
@@ -92,51 +134,158 @@ export function DashboardPage() {
         </XStack>
 
         {/* Stats Overview */}
-        <XStack gap="$3" flexWrap="wrap">
-          <Card flex={1} minWidth={150} padding="$4" alignItems="center" gap="$2">
-            <TrendingUp size={24} color="$neonGreen" />
-            <Text fontSize="$sm" color="$textMuted">Total Games</Text>
-            <Text fontSize="$2xl" fontWeight="bold" color="$neonGreen">{stats.totalGames}</Text>
+        <XStack gap="$4" flexWrap="wrap">
+          <Card 
+            flex={1} 
+            minWidth={180} 
+            padding="$5" 
+            alignItems="center" 
+            gap="$3"
+            style={{
+              background: 'linear-gradient(135deg, rgba(0, 255, 136, 0.1) 0%, rgba(0, 255, 136, 0.05) 100%)',
+              boxShadow: '0 0 40px rgba(0, 255, 136, 0.2)',
+            }}
+          >
+            <Stack 
+              padding="$3" 
+              borderRadius={16}
+              style={{
+                background: 'rgba(0, 255, 136, 0.2)',
+                boxShadow: '0 0 20px rgba(0, 255, 136, 0.4)',
+              }}
+            >
+              <TrendingUp size={28} color="#00FF88" />
+            </Stack>
+            <Text fontSize="$sm" color="$textMuted" textTransform="uppercase" letterSpacing={1.2}>
+              Total Games
+            </Text>
+            <Text 
+              fontSize={32} 
+              fontWeight="900" 
+              color="$neonGreen"
+              style={{ fontFamily: 'Rajdhani, monospace' }}
+            >
+              {stats.totalGames}
+            </Text>
           </Card>
 
-          <Card flex={1} minWidth={150} padding="$4" alignItems="center" gap="$2">
-            <Trophy size={24} color="$neonYellow" />
-            <Text fontSize="$sm" color="$textMuted">Win Rate</Text>
-            <Text fontSize="$2xl" fontWeight="bold" color="$neonYellow">{stats.winRate}%</Text>
+          <Card 
+            flex={1} 
+            minWidth={180} 
+            padding="$5" 
+            alignItems="center" 
+            gap="$3"
+            style={{
+              background: 'linear-gradient(135deg, rgba(255, 221, 0, 0.1) 0%, rgba(255, 221, 0, 0.05) 100%)',
+              boxShadow: '0 0 40px rgba(255, 221, 0, 0.2)',
+            }}
+          >
+            <Stack 
+              padding="$3" 
+              borderRadius={16}
+              style={{
+                background: 'rgba(255, 221, 0, 0.2)',
+                boxShadow: '0 0 20px rgba(255, 221, 0, 0.4)',
+              }}
+            >
+              <Trophy size={28} color="#FFDD00" />
+            </Stack>
+            <Text fontSize="$sm" color="$textMuted" textTransform="uppercase" letterSpacing={1.2}>
+              Win Rate
+            </Text>
+            <Text 
+              fontSize={32} 
+              fontWeight="900" 
+              color="$neonYellow"
+              style={{ fontFamily: 'Rajdhani, monospace' }}
+            >
+              {stats.winRate}%
+            </Text>
           </Card>
 
-          <Card flex={1} minWidth={150} padding="$4" alignItems="center" gap="$2">
-            <Users size={24} color="$neonBlue" />
-            <Text fontSize="$sm" color="$textMuted">Active Games</Text>
-            <Text fontSize="$2xl" fontWeight="bold" color="$neonBlue">{myActiveGames?.length || 0}</Text>
+          <Card 
+            flex={1} 
+            minWidth={180} 
+            padding="$5" 
+            alignItems="center" 
+            gap="$3"
+            style={{
+              background: 'linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(0, 212, 255, 0.05) 100%)',
+              boxShadow: '0 0 40px rgba(0, 212, 255, 0.2)',
+            }}
+          >
+            <Stack 
+              padding="$3" 
+              borderRadius={16}
+              style={{
+                background: 'rgba(0, 212, 255, 0.2)',
+                boxShadow: '0 0 20px rgba(0, 212, 255, 0.4)',
+              }}
+            >
+              <Users size={28} color="#00D4FF" />
+            </Stack>
+            <Text fontSize="$sm" color="$textMuted" textTransform="uppercase" letterSpacing={1.2}>
+              Active Games
+            </Text>
+            <Text 
+              fontSize={32} 
+              fontWeight="900" 
+              color="$neonBlue"
+              style={{ fontFamily: 'Rajdhani, monospace' }}
+            >
+              {myActiveGames?.length || 0}
+            </Text>
           </Card>
         </XStack>
 
         {/* Quick Actions */}
         <YStack gap="$4">
-          <Text fontSize="$xl" fontWeight="bold">Quick Actions</Text>
+          <Text 
+            fontSize={28} 
+            fontWeight="900" 
+            style={{ 
+              fontFamily: 'Orbitron, monospace',
+              letterSpacing: 1,
+            }}
+          >
+            Quick Actions
+          </Text>
 
-          <XStack gap="$3" flexWrap="wrap">
-            <Button
-              size="$5"
-              onPress={handleCreateGame}
-              icon={<Plus size={20} />}
-              flex={1}
-              minWidth={200}
-            >
-              Create New Game
-            </Button>
+          <XStack gap="$4" flexWrap="wrap">
+            <Stack flex={1} minWidth={220}>
+              <Button
+                size="$6"
+                onPress={handleCreateGame}
+                icon={<Plus size={24} />}
+                fullWidth
+                style={{
+                  paddingVertical: 20,
+                  fontSize: 18,
+                  fontWeight: 'bold',
+                  background: 'linear-gradient(135deg, #00D4FF 0%, #0099CC 100%)',
+                  boxShadow: '0 4px 20px rgba(0, 212, 255, 0.4)',
+                }}
+              >
+                Create New Game
+              </Button>
+            </Stack>
 
-            <Button
-              size="$5"
-              variant="secondary"
-              onPress={handleJoinByCode}
-              icon={<Hash size={20} />}
-              flex={1}
-              minWidth={200}
-            >
-              Join with Code
-            </Button>
+            <Stack flex={1} minWidth={220}>
+              <Button
+                size="$6"
+                variant="secondary"
+                onPress={handleJoinByCode}
+                icon={<Hash size={24} />}
+                fullWidth
+                style={{
+                  paddingVertical: 20,
+                  fontSize: 18,
+                  fontWeight: 'bold',
+                }}
+              >
+                Join with Code
+              </Button>
+            </Stack>
           </XStack>
         </YStack>
 
@@ -144,11 +293,21 @@ export function DashboardPage() {
         {myActiveGames && myActiveGames.length > 0 && (
           <YStack gap="$4">
             <XStack justifyContent="space-between" alignItems="center">
-              <Text fontSize="$xl" fontWeight="bold">My Active Games</Text>
+              <Text 
+                fontSize={28} 
+                fontWeight="900" 
+                style={{ 
+                  fontFamily: 'Orbitron, monospace',
+                  letterSpacing: 1,
+                }}
+              >
+                My Active Games
+              </Text>
               <Button
                 size="$2"
                 variant="ghost"
                 onPress={() => navigate(routes.history)}
+                style={{ opacity: 0.8 }}
               >
                 View All
               </Button>
@@ -177,11 +336,21 @@ export function DashboardPage() {
         {/* Available Games */}
         <YStack gap="$4">
           <XStack justifyContent="space-between" alignItems="center">
-            <Text fontSize="$xl" fontWeight="bold">Join a Game</Text>
+            <Text 
+              fontSize={28} 
+              fontWeight="900" 
+              style={{ 
+                fontFamily: 'Orbitron, monospace',
+                letterSpacing: 1,
+              }}
+            >
+              Join a Game
+            </Text>
             <Button
               size="$2"
               variant="ghost"
               onPress={() => navigate(routes.joinGame)}
+              style={{ opacity: 0.8 }}
             >
               Browse All
             </Button>
@@ -213,9 +382,35 @@ export function DashboardPage() {
         {/* Active Users Section */}
         <YStack gap="$4">
           <XStack justifyContent="space-between" alignItems="center">
-            <XStack gap="$2" alignItems="center">
-              <Users size={24} color="$neonGreen" />
-              <Text fontSize="$xl" fontWeight="bold">Active Players ({activeUsers.length})</Text>
+            <XStack gap="$3" alignItems="center">
+              <Stack
+                padding="$2"
+                borderRadius={12}
+                style={{
+                  background: 'rgba(0, 255, 136, 0.2)',
+                  boxShadow: '0 0 15px rgba(0, 255, 136, 0.4)',
+                }}
+              >
+                <Users size={24} color="#00FF88" />
+              </Stack>
+              <Text 
+                fontSize={28} 
+                fontWeight="900" 
+                style={{ 
+                  fontFamily: 'Orbitron, monospace',
+                  letterSpacing: 1,
+                }}
+              >
+                Active Players
+              </Text>
+              <Text 
+                fontSize={24} 
+                color="$neonGreen"
+                fontWeight="bold"
+                style={{ fontFamily: 'Rajdhani, monospace' }}
+              >
+                ({activeUsers.length})
+              </Text>
             </XStack>
           </XStack>
 
@@ -236,17 +431,47 @@ export function DashboardPage() {
                 activeUsers.map((user) => (
                   <Card
                     key={user.id}
-                    padding="$3"
-                    minWidth={150}
+                    padding="$4"
+                    minWidth={160}
                     interactive={user.isInGame}
                     onPress={user.isInGame ? () => navigate(routes.gameActive.replace(':gameId', user.gameId!)) : undefined}
+                    style={{
+                      background: user.isInGame 
+                        ? 'linear-gradient(135deg, rgba(0, 255, 136, 0.1) 0%, rgba(0, 255, 136, 0.05) 100%)'
+                        : 'linear-gradient(135deg, rgba(18, 18, 26, 0.8) 0%, rgba(10, 10, 15, 0.8) 100%)',
+                      borderColor: user.isInGame ? 'rgba(0, 255, 136, 0.3)' : 'rgba(255, 255, 255, 0.05)',
+                      borderWidth: 1,
+                      boxShadow: user.isInGame 
+                        ? '0 0 20px rgba(0, 255, 136, 0.2)'
+                        : '0 4px 15px rgba(0, 0, 0, 0.3)',
+                    }}
                   >
-                    <YStack gap="$2" alignItems="center">
+                    <YStack gap="$3" alignItems="center">
                       <Stack position="relative">
-                        <Avatar size="$5" circular borderWidth={2} borderColor={user.isInGame ? "$neonGreen" : "$borderColor"}>
+                        <Avatar 
+                          size={56} 
+                          circular 
+                          borderWidth={2} 
+                          style={{
+                            borderColor: user.isInGame ? '#00FF88' : 'rgba(255, 255, 255, 0.1)',
+                            boxShadow: user.isInGame 
+                              ? '0 0 20px rgba(0, 255, 136, 0.5)'
+                              : '0 0 10px rgba(0, 0, 0, 0.5)',
+                          }}
+                        >
                           {user.avatarUrl && <Avatar.Image src={user.avatarUrl} />}
-                          <Avatar.Fallback backgroundColor="$surface">
-                            <Text color="$text" fontWeight="bold">
+                          <Avatar.Fallback 
+                            style={{
+                              background: user.isInGame 
+                                ? 'linear-gradient(135deg, #00FF88 0%, #00CC6A 100%)'
+                                : 'linear-gradient(135deg, #1A1A2E 0%, #0F0F1E 100%)',
+                            }}
+                          >
+                            <Text 
+                              color={user.isInGame ? "$black" : "$white"} 
+                              fontWeight="900"
+                              fontSize={20}
+                            >
                               {user.name[0].toUpperCase()}
                             </Text>
                           </Avatar.Fallback>
@@ -254,22 +479,50 @@ export function DashboardPage() {
                         {user.isInGame && (
                           <Stack
                             position="absolute"
-                            bottom={-2}
-                            right={-2}
-                            backgroundColor="$neonGreen"
-                            borderRadius={10}
-                            padding="$1"
+                            bottom={-4}
+                            right={-4}
+                            width={24}
+                            height={24}
+                            borderRadius={12}
+                            alignItems="center"
+                            justifyContent="center"
+                            style={{
+                              background: 'linear-gradient(135deg, #00FF88 0%, #00CC6A 100%)',
+                              boxShadow: '0 0 10px rgba(0, 255, 136, 0.6)',
+                            }}
                           >
-                            <Gamepad2 size={12} color="$black" />
+                            <Gamepad2 size={14} color="#000" strokeWidth={3} />
                           </Stack>
                         )}
                       </Stack>
-                      <Text fontSize="$sm" fontWeight="bold" numberOfLines={1}>
+                      <Text 
+                        fontSize={16} 
+                        fontWeight="bold" 
+                        numberOfLines={1}
+                        style={{ fontFamily: 'Rajdhani, monospace' }}
+                      >
                         {user.name}
                       </Text>
-                      <Text fontSize="$xs" color={user.isInGame ? "$neonGreen" : "$textMuted"}>
-                        {user.isInGame ? 'In Game' : 'Online'}
-                      </Text>
+                      <Stack
+                        paddingHorizontal="$2.5"
+                        paddingVertical="$1"
+                        borderRadius={6}
+                        style={{
+                          background: user.isInGame 
+                            ? 'rgba(0, 255, 136, 0.2)'
+                            : 'rgba(255, 255, 255, 0.05)',
+                        }}
+                      >
+                        <Text 
+                          fontSize={12} 
+                          color={user.isInGame ? "$neonGreen" : "$textMuted"}
+                          fontWeight="bold"
+                          textTransform="uppercase"
+                          letterSpacing={0.5}
+                        >
+                          {user.isInGame ? '● LIVE' : '● ONLINE'}
+                        </Text>
+                      </Stack>
                     </YStack>
                   </Card>
                 ))
@@ -277,8 +530,11 @@ export function DashboardPage() {
             </XStack>
           </ScrollView>
         </YStack>
-      </YStack>
-    </ScrollView>
+        
+          </YStack>
+        </Stack>
+      </ScrollView>
+    </Stack>
   );
 }
 
@@ -295,59 +551,99 @@ function GameCard({ game, isActive, onPress }: GameCardProps) {
   return (
     <Card
       flex={1}
-      minWidth={280}
+      minWidth={300}
       interactive={!isFull}
       onPress={!isFull || isActive ? onPress : undefined}
       opacity={isFull && !isActive ? 0.6 : 1}
-      variant={isActive ? "elevated" : "outlined"}
-      borderColor={isActive ? "$neonGreen" : undefined}
+      padding="$5"
+      style={{
+        background: isActive 
+          ? 'linear-gradient(135deg, rgba(0, 255, 136, 0.15) 0%, rgba(0, 255, 136, 0.08) 100%)' 
+          : 'linear-gradient(135deg, rgba(18, 18, 26, 0.9) 0%, rgba(10, 10, 15, 0.9) 100%)',
+        borderColor: isActive ? '#00FF88' : 'rgba(0, 212, 255, 0.2)',
+        borderWidth: isActive ? 2 : 1,
+        boxShadow: isActive 
+          ? '0 0 30px rgba(0, 255, 136, 0.3), inset 0 0 20px rgba(0, 255, 136, 0.1)'
+          : '0 4px 20px rgba(0, 0, 0, 0.5)',
+      }}
     >
       <YStack gap="$3">
         <XStack justifyContent="space-between" alignItems="flex-start">
-          <YStack gap="$1" flex={1}>
-            <Text fontSize="$lg" fontWeight="bold" numberOfLines={1}>
+          <YStack gap="$2" flex={1}>
+            <Text 
+              fontSize={20} 
+              fontWeight="900" 
+              numberOfLines={1}
+              style={{ fontFamily: 'Rajdhani, monospace' }}
+              color={isActive ? "$neonGreen" : "$text"}
+            >
               {game.name}
             </Text>
-            <XStack gap="$2" alignItems="center">
-              <Text fontSize="$sm" color="$textMuted">
-                {game.board_size || game.boardSize}x{game.board_size || game.boardSize}
-              </Text>
-              <Text fontSize="$sm" color={isFull ? "$error" : "$success"}>
-                {game.playerCount || game.player_count || 0}/{game.max_players || game.maxPlayers} players
-              </Text>
+            <XStack gap="$3" alignItems="center">
+              <Stack
+                paddingHorizontal="$2"
+                paddingVertical="$1"
+                backgroundColor="rgba(0, 212, 255, 0.1)"
+                borderRadius="$xs"
+                borderWidth={1}
+                borderColor="rgba(0, 212, 255, 0.3)"
+              >
+                <Text fontSize="$xs" color="$neonBlue" fontWeight="bold">
+                  {game.board_size || game.boardSize}×{game.board_size || game.boardSize}
+                </Text>
+              </Stack>
+              <XStack gap="$1" alignItems="center">
+                <Users size={14} color={isFull ? "#FF0080" : "#00D4FF"} />
+                <Text 
+                  fontSize="$sm" 
+                  color={isFull ? "$neonPink" : "$neonBlue"}
+                  fontWeight="bold"
+                >
+                  {game.playerCount || game.player_count || 0}/{game.max_players || game.maxPlayers}
+                </Text>
+              </XStack>
             </XStack>
           </YStack>
 
           {isActive ? (
             <Stack
-              paddingHorizontal="$2"
-              paddingVertical="$1"
-              backgroundColor="$neonGreen"
-              borderRadius="$sm"
+              paddingHorizontal="$3"
+              paddingVertical="$1.5"
+              borderRadius={8}
+              style={{
+                background: 'linear-gradient(135deg, #00FF88 0%, #00CC6A 100%)',
+                boxShadow: '0 0 20px rgba(0, 255, 136, 0.5)',
+              }}
             >
-              <Text fontSize="$xs" fontWeight="bold" color="$black">
-                IN PROGRESS
+              <Text fontSize="$xs" fontWeight="900" color="$black" textTransform="uppercase">
+                LIVE
               </Text>
             </Stack>
           ) : isFull ? (
             <Stack
-              paddingHorizontal="$2"
-              paddingVertical="$1"
-              backgroundColor="$error"
-              borderRadius="$sm"
+              paddingHorizontal="$3"
+              paddingVertical="$1.5"
+              backgroundColor="$neonPink"
+              borderRadius={8}
+              style={{
+                boxShadow: '0 0 15px rgba(255, 0, 128, 0.5)',
+              }}
             >
-              <Text fontSize="$xs" fontWeight="bold" color="$white">
+              <Text fontSize="$xs" fontWeight="900" color="$white" textTransform="uppercase">
                 FULL
               </Text>
             </Stack>
           ) : (
             <Stack
-              paddingHorizontal="$2"
-              paddingVertical="$1"
-              backgroundColor="$neonBlue"
-              borderRadius="$sm"
+              paddingHorizontal="$3"
+              paddingVertical="$1.5"
+              borderRadius={8}
+              style={{
+                background: 'linear-gradient(135deg, #00D4FF 0%, #0099CC 100%)',
+                boxShadow: '0 0 15px rgba(0, 212, 255, 0.5)',
+              }}
             >
-              <Text fontSize="$xs" fontWeight="bold" color="$white">
+              <Text fontSize="$xs" fontWeight="900" color="$white" textTransform="uppercase">
                 OPEN
               </Text>
             </Stack>
@@ -355,19 +651,50 @@ function GameCard({ game, isActive, onPress }: GameCardProps) {
         </XStack>
 
         <XStack justifyContent="space-between" alignItems="center">
-          <Text fontSize="$sm" color="$textMuted">
-            by {game.creatorName || game.creator_name || 'Unknown'}
-          </Text>
+          <XStack gap="$2" alignItems="center">
+            <Stack
+              width={32}
+              height={32}
+              borderRadius={16}
+              backgroundColor="rgba(255, 255, 255, 0.05)"
+              alignItems="center"
+              justifyContent="center"
+              borderWidth={1}
+              borderColor="rgba(255, 255, 255, 0.1)"
+            >
+              <Text fontSize="$sm" fontWeight="bold">
+                {(game.creatorName || game.creator_name || 'Unknown').charAt(0).toUpperCase()}
+              </Text>
+            </Stack>
+            <Text fontSize="$sm" color="$textMuted">
+              {game.creatorName || game.creator_name || 'Unknown'}
+            </Text>
+          </XStack>
 
           {!isFull && !isActive && (
-            <Button size="$2" variant="secondary" onPress={onPress}>
-              Join
+            <Button 
+              size="$3" 
+              onPress={onPress}
+              style={{
+                paddingHorizontal: 24,
+                fontWeight: 'bold',
+              }}
+            >
+              JOIN
             </Button>
           )}
 
           {isActive && (
-            <Button size="$2" variant="primary" onPress={onPress}>
-              Continue
+            <Button 
+              size="$3" 
+              onPress={onPress}
+              style={{
+                paddingHorizontal: 20,
+                fontWeight: 'bold',
+                background: 'linear-gradient(135deg, #00FF88 0%, #00CC6A 100%)',
+              }}
+            >
+              CONTINUE
             </Button>
           )}
         </XStack>
