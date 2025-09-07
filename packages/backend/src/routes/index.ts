@@ -3,6 +3,7 @@ import authRoutes from './auth.routes';
 import gameRoutes from './game.routes';
 import userRoutes from './user.routes';
 import leaderboardRoutes from './leaderboard.routes';
+import notificationRoutes from './notification.routes';
 
 const router = Router();
 
@@ -16,5 +17,6 @@ router.use('/auth', authRoutes);
 router.use('/games', gameRoutes);
 router.use('/users', userRoutes);
 router.use('/leaderboard', leaderboardRoutes);
+router.use('/notifications', notificationRoutes);
 
 export default router;

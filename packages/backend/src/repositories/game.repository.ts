@@ -6,6 +6,19 @@ export class GameRepository {
   private get pool(): Pool {
     return getPool();
   }
+  
+  async getParticipants(gameId: string): Promise<any[]> {
+    const query = `
+      SELECT gp.*, u.name, u.avatar_url 
+      FROM game_participants gp
+      JOIN users u ON gp.user_id = u.id
+      WHERE gp.game_id = $1
+      ORDER BY gp.joined_at
+    `;
+    const result = await this.pool.query(query, [gameId]);
+    
+    return result.rows;
+  }
 
   async create(gameData: CreateGameDTO): Promise<Game> {
     const { creator_id, name, board_size, max_players } = gameData;

@@ -31,6 +31,19 @@ export const WS_CLIENT_EVENTS = {
   // Player State
   PLAYER_READY: 'player:ready',
   PLAYER_NOT_READY: 'player:not_ready',
+  
+  // Notifications
+  NOTIFICATION_SEND_INVITE: 'notification:send_invite',
+  NOTIFICATION_MARK_READ: 'notification:mark_read',
+  NOTIFICATION_MARK_ALL_READ: 'notification:mark_all_read',
+  NOTIFICATION_DELETE: 'notification:delete',
+  NOTIFICATION_GET_COUNT: 'notification:get_count',
+  NOTIFICATION_SUBSCRIBE: 'notification:subscribe',
+  NOTIFICATION_UNSUBSCRIBE: 'notification:unsubscribe',
+  NOTIFICATION_UPDATE_PREFERENCES: 'notification:update_preferences',
+  
+  // Game Invitations
+  GAME_INVITE: 'game:invite',
 } as const;
 
 // WebSocket Events - Server to Client
@@ -66,6 +79,18 @@ export const WS_SERVER_EVENTS = {
   
   // Player State
   PLAYER_READY_STATE: 'player:ready_state',
+  
+  // Notifications
+  NOTIFICATION_RECEIVED: 'notification:received',
+  NOTIFICATION_READ: 'notification:read',
+  NOTIFICATION_DELETED: 'notification:deleted',
+  NOTIFICATION_COUNT_UPDATE: 'notification:count_update',
+  NOTIFICATION_COUNT: 'notification:count',
+  NOTIFICATION_BATCH: 'notification:batch',
+  NOTIFICATION_PREFERENCES_UPDATED: 'notification:preferences_updated',
+  
+  // Game Invitations
+  GAME_INVITE_SENT: 'game:invite_sent',
 } as const;
 
 // Error Codes

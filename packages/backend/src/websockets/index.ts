@@ -2,6 +2,7 @@ import { Server } from 'socket.io';
 import { logger } from '../utils/logger';
 import { authenticateSocket, AuthenticatedSocket } from './auth.middleware';
 import { setupGameHandlers } from './game.handlers';
+import { setupNotificationHandlers } from './notification.handlers';
 import { GameParticipantRepository } from '../repositories/game-participant.repository';
 import {
   WS_CLIENT_EVENTS,
@@ -34,6 +35,12 @@ export const initializeWebSocket = (io: Server) => {
 
     // Set up game event handlers
     setupGameHandlers(io, socket);
+    
+    // Set up notification event handlers
+    setupNotificationHandlers(io, socket);
+    
+    // Join user-specific room for targeted messaging
+    socket.join(`${ROOM_PREFIXES.USER}${socket.userId}`);
 
     // Handle disconnection
     socket.on('disconnect', async (reason) => {

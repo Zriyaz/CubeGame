@@ -3,13 +3,21 @@ import { logger } from '../utils/logger';
 import { HTTP_STATUS, ERROR_CODES } from '@socket-game/shared';
 
 export class AppError extends Error {
+  public details?: any;
+  
   constructor(
     public statusCode: number,
     public message: string,
-    public code?: string
+    public code?: string | any
   ) {
     super(message);
     this.name = 'AppError';
+    if (typeof code === 'object') {
+      this.details = code;
+      this.code = undefined;
+    } else {
+      this.code = code;
+    }
     Error.captureStackTrace(this, this.constructor);
   }
 }

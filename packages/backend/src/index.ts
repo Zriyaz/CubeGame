@@ -14,6 +14,7 @@ import { initializeWebSocket } from './websockets';
 import { connectDatabase } from './config/database';
 import { connectRedis } from './config/redis';
 import { configurePassport } from './config/passport';
+import { NotificationService } from './services/notification.service';
 
 const app = express();
 const httpServer = createServer(app);
@@ -55,6 +56,9 @@ app.use(errorHandler);
 
 // Initialize WebSocket
 initializeWebSocket(io);
+
+// Initialize NotificationService with Socket.io
+NotificationService.initialize(io);
 
 // Start server
 async function startServer() {
