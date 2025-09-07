@@ -7,8 +7,16 @@ import { Card } from '@/components/ui/Card';
 import { useAuthStore } from '@/stores/auth.store';
 import { soundManager } from '@/utils/sound/soundManager';
 import { useGameDetails } from '@/hooks/useGame';
-import { GAME_STATUS, type Player } from '@socket-game/shared';
+import { GAME_STATUS, type Player, type GameWithDetails } from '@socket-game/shared';
 import { routes } from '@/routes';
+
+// Extend the GameWithDetails type to include both snake_case and camelCase fields
+// This handles the API response which includes both formats
+interface GameWithDetailsExtended extends GameWithDetails {
+  boardSize?: number;
+  startedAt?: string;
+  endedAt?: string;
+}
 
 interface GameStats {
   duration: number;
@@ -24,15 +32,69 @@ export function GameResultsPage() {
   const [isWinner, setIsWinner] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [showPlayers, setShowPlayers] = useState(false);
-  
+  const [gameStats, setGameStats] = useState<GameStats>({
+    duration: 0,
+    totalMoves: 0,
+    longestStreak: 8,
+    biggestCapture: 5,
+  });
+
   // Fetch game data with refetch on mount to ensure fresh data
-  const { data: gameDetails, isLoading, refetch } = useGameDetails(gameId!);
-  
+  const { data: gameDetails, isLoading, refetch } = useGameDetails(gameId!) as {
+    data: GameWithDetailsExtended | undefined;
+    isLoading: boolean;
+    refetch: () => void;
+  };
+
   // Refetch on mount to ensure we have the latest game status
   useEffect(() => {
     refetch();
   }, [refetch]);
-  
+
+  // Calculate game stats after game details are loaded
+  useEffect(() => {
+    if (gameDetails && gameDetails.status === GAME_STATUS.COMPLETED) {
+      const startedAt = gameDetails.started_at || gameDetails.startedAt;
+      const endedAt = gameDetails.ended_at || gameDetails.endedAt;
+
+      if (startedAt && endedAt) {
+        const startTime = new Date(startedAt).getTime();
+        const endTime = new Date(endedAt).getTime();
+        const duration = Math.floor((endTime - startTime) / 1000);
+        const claimedCells = gameDetails.board.flat().filter(cell => cell !== null).length;
+
+        setGameStats(prev => ({
+          ...prev,
+          duration: duration,
+          totalMoves: claimedCells,
+        }));
+      }
+    }
+  }, [gameDetails]);
+
+  // Effect for winner/defeat sounds - must be called before any returns
+  useEffect(() => {
+    if (!gameDetails || gameDetails.status !== GAME_STATUS.COMPLETED || !user) return;
+    const sortedPlayers = [...gameDetails.players].sort((a, b) => b.cellsOwned - a.cellsOwned);
+    const currentPlayer = sortedPlayers.find(p => p.userId === user.id);
+
+    if (!currentPlayer) return;
+
+    const rank = sortedPlayers.findIndex(p => p.userId === user.id) + 1;
+    setIsWinner(rank === 1);
+
+    // Play appropriate sound
+    if (rank === 1) {
+      soundManager.play('victory');
+    } else {
+      soundManager.play('defeat');
+    }
+
+    // Trigger animations
+    setTimeout(() => setShowStats(true), 500);
+    setTimeout(() => setShowPlayers(true), 1000);
+  }, [gameDetails, user]);
+
   if (isLoading || !gameDetails) {
     return (
       <Stack flex={1} alignItems="center" justifyContent="center">
@@ -40,7 +102,7 @@ export function GameResultsPage() {
       </Stack>
     );
   }
-  
+
   // If game is not completed, show appropriate message
   if (gameDetails.status !== GAME_STATUS.COMPLETED) {
     return (
@@ -65,43 +127,17 @@ export function GameResultsPage() {
       </Stack>
     );
   }
-  
+
   // Sort players by cells owned to get rankings
   const sortedPlayers = [...gameDetails.players].sort((a, b) => b.cellsOwned - a.cellsOwned);
   const rankedPlayers = sortedPlayers.map((player, index) => ({
     ...player,
     rank: index + 1
   }));
-  
+
   const currentPlayer = rankedPlayers.find(p => p.userId === user?.id);
-  const winner = rankedPlayers[0];
-  const totalCells = gameDetails.boardSize * gameDetails.boardSize;
-  const claimedCells = gameDetails.board.flat().filter(cell => cell !== null).length;
-  
-  // Calculate game stats (mock for now - should come from backend)
-  const [gameStats] = useState<GameStats>({
-    duration: Math.floor((Date.now() - new Date(gameDetails.startedAt || '').getTime()) / 1000),
-    totalMoves: claimedCells,
-    longestStreak: 8,
-    biggestCapture: 5,
-  });
-
-  useEffect(() => {
-    if (!currentPlayer) return;
-    
-    setIsWinner(currentPlayer.rank === 1);
-    
-    // Play appropriate sound
-    if (currentPlayer.rank === 1) {
-      soundManager.play('victory');
-    } else {
-      soundManager.play('defeat');
-    }
-
-    // Trigger animations
-    setTimeout(() => setShowStats(true), 500);
-    setTimeout(() => setShowPlayers(true), 1000);
-  }, [currentPlayer]);
+  const boardSize = gameDetails.board_size || gameDetails.boardSize || 8;
+  const totalCells = boardSize * boardSize;
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -119,7 +155,7 @@ export function GameResultsPage() {
 
   return (
     <Stack flex={1} backgroundColor="$background" alignItems="center" justifyContent="center" padding="$4">
-      <YStack space="$6" maxWidth={800} width="100%" alignItems="center">
+      <YStack gap="$6" maxWidth={800} width="100%" alignItems="center">
         {/* Result Animation */}
         <AnimatePresence>
           <Stack
@@ -129,7 +165,7 @@ export function GameResultsPage() {
             scale={1}
             opacity={1}
           >
-            <YStack space="$4" alignItems="center">
+            <YStack gap="$4" alignItems="center">
               {isWinner ? (
                 <>
                   <Stack
@@ -178,7 +214,7 @@ export function GameResultsPage() {
         <AnimatePresence>
           {showPlayers && (
             <YStack
-              space="$3"
+              gap="$3"
               width="100%"
               animation="quick"
               enterStyle={{ x: -50, opacity: 0 }}
@@ -188,19 +224,18 @@ export function GameResultsPage() {
               <Text fontSize="$lg" fontWeight="bold" textAlign="center" marginBottom="$2">
                 Final Rankings
               </Text>
-              {rankedPlayers.map((player, index) => (
+              {rankedPlayers.map((player) => (
                 <Stack
                   key={player.userId}
                   animation="quick"
                   enterStyle={{ x: -50, opacity: 0 }}
                   x={0}
                   opacity={1}
-                  animationDelay={index * 100}
                 >
-                  <PlayerResultCard 
-                    player={player} 
+                  <PlayerResultCard
+                    player={player}
                     isCurrentPlayer={player.userId === user?.id}
-                    totalCells={totalCells} 
+                    totalCells={totalCells}
                   />
                 </Stack>
               ))}
@@ -212,7 +247,7 @@ export function GameResultsPage() {
         <AnimatePresence>
           {showStats && (
             <XStack
-              space="$4"
+              gap="$4"
               flexWrap="wrap"
               justifyContent="center"
               animation="quick"
@@ -249,22 +284,24 @@ export function GameResultsPage() {
         </AnimatePresence>
 
         {/* Action Buttons */}
-        <XStack space="$4" width="100%" maxWidth={400}>
-          <Button
-            flex={1}
-            size="$5"
-            onPress={handlePlayAgain}
-          >
-            Play Again
-          </Button>
-          <Button
-            flex={1}
-            size="$5"
-            variant="secondary"
-            onPress={handleViewHistory}
-          >
-            View Details
-          </Button>
+        <XStack gap="$4" width="100%" maxWidth={400}>
+          <Stack flex={1}>
+            <Button
+              size="$5"
+              onPress={handlePlayAgain}
+            >
+              Play Again
+            </Button>
+          </Stack>
+          <Stack flex={1}>
+            <Button
+              size="$5"
+              variant="secondary"
+              onPress={handleViewHistory}
+            >
+              View Details
+            </Button>
+          </Stack>
         </XStack>
       </YStack>
     </Stack>
@@ -275,33 +312,33 @@ interface PlayerWithRank extends Player {
   rank: number;
 }
 
-function PlayerResultCard({ player, isCurrentPlayer, totalCells }: { 
-  player: PlayerWithRank; 
+function PlayerResultCard({ player, isCurrentPlayer, totalCells }: {
+  player: PlayerWithRank;
   isCurrentPlayer: boolean;
   totalCells: number;
 }) {
   const rankEmoji = ['🥇', '🥈', '🥉', ''][player.rank - 1] || '';
-  
+
   return (
     <Card
       backgroundColor={isCurrentPlayer ? '$surfaceHover' : '$surface'}
       borderWidth={isCurrentPlayer ? 2 : 0}
       borderColor={isCurrentPlayer ? '$neonBlue' : undefined}
     >
-      <XStack alignItems="center" space="$3">
+      <XStack alignItems="center" gap="$3">
         <Text fontSize={32} width={48} textAlign="center">
           {rankEmoji || `#${player.rank}`}
         </Text>
-        
+
         <Stack
           width={40}
           height={40}
           borderRadius={20}
           backgroundColor={player.color}
         />
-        
+
         <YStack flex={1}>
-          <XStack space="$2" alignItems="center">
+          <XStack gap="$2" alignItems="center">
             <Text fontSize="$lg" fontWeight="bold">
               {player.name}
             </Text>
@@ -313,7 +350,7 @@ function PlayerResultCard({ player, isCurrentPlayer, totalCells }: {
             {player.cellsOwned} cells captured
           </Text>
         </YStack>
-        
+
         <Text fontSize="$xl" fontWeight="bold" color={player.color}>
           {totalCells > 0 ? ((player.cellsOwned / totalCells) * 100).toFixed(0) : 0}%
         </Text>
@@ -322,15 +359,15 @@ function PlayerResultCard({ player, isCurrentPlayer, totalCells }: {
   );
 }
 
-function StatCard({ 
-  icon, 
-  label, 
-  value, 
-  color 
-}: { 
-  icon: React.ReactNode; 
-  label: string; 
-  value: string; 
+function StatCard({
+  icon,
+  label,
+  value,
+  color
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
   color: string;
 }) {
   return (
@@ -338,11 +375,11 @@ function StatCard({
       variant="outlined"
       padding="$4"
       alignItems="center"
-      space="$2"
+      gap="$2"
       minWidth={140}
     >
-      <Stack color={color}>
-        {icon}
+      <Stack>
+        <Text color={color}>{icon}</Text>
       </Stack>
       <Text fontSize="$sm" color="$textMuted">{label}</Text>
       <Text fontSize="$2xl" fontWeight="bold" color={color}>
