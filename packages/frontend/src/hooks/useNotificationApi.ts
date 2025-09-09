@@ -37,8 +37,10 @@ export function useNotificationApi() {
 
   // Subscribe to notifications via WebSocket
   const subscribeToNotifications = () => {
+    console.log('useNotificationApi: Subscribing to notifications...');
     gameSocket.subscribeToNotifications();
     return () => {
+      console.log('useNotificationApi: Unsubscribing from notifications...');
       gameSocket.unsubscribeFromNotifications();
     };
   };

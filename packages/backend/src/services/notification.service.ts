@@ -175,8 +175,27 @@ export class NotificationService {
       // Send via WebSocket if user is online
       if (this.io) {
         const userRoom = `${ROOM_PREFIXES.USER}${data.userId}`;
+        logger.info('Sending notification via WebSocket', {
+          userId: data.userId,
+          room: userRoom,
+          notificationId: notification.id,
+          hasIo: !!this.io,
+        });
+        
+        // Get sockets in the room to verify user is connected
+        const socketsInRoom = await this.io.in(userRoom).fetchSockets();
+        logger.info('Sockets in user room', {
+          room: userRoom,
+          socketCount: socketsInRoom.length,
+          socketIds: socketsInRoom.map(s => s.id),
+        });
+        
         this.io.to(userRoom).emit(WS_SERVER_EVENTS.NOTIFICATION_RECEIVED, {
           notification: mappedNotification,
+        });
+      } else {
+        logger.warn('Socket.IO not initialized, cannot send real-time notification', {
+          userId: data.userId,
         });
       }
 

@@ -33,6 +33,7 @@ export const setupNotificationHandlers = (io: Server, socket: AuthenticatedSocke
         socketId: socket.id,
         userId,
         room: userRoom,
+        rooms: Array.from(socket.rooms),
       });
 
       // Send initial unread count

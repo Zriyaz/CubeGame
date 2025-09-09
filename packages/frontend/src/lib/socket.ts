@@ -110,6 +110,11 @@ class GameSocket {
     this.socket.on(WS_SERVER_EVENTS.PLAYER_READY_STATE, (data: PlayerReadyStateMessage) => {
       this.emit('playerReadyState', data);
     });
+    
+    // Debug: Log all events
+    this.socket.onAny((event, ...args) => {
+      console.log(`[Socket] Event received: ${event}`, args);
+    });
   }
 
   /**
@@ -212,6 +217,11 @@ class GameSocket {
    * Subscribe to notifications
    */
   subscribeToNotifications() {
+    console.log('GameSocket: Subscribing to notifications...', {
+      isConnected: this.isConnected,
+      socketId: this.socketId,
+      event: WS_CLIENT_EVENTS.NOTIFICATION_SUBSCRIBE
+    });
     this.socket?.emit(WS_CLIENT_EVENTS.NOTIFICATION_SUBSCRIBE);
   }
 

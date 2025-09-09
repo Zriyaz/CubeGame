@@ -403,7 +403,7 @@ class WebAudioSounds {
 
   playNotification() {
     if (!this.enabled) return;
-    const ctx = this.getContext();
+    const ctx = this.getAudioContext();
     
     // Create a pleasant bell-like notification sound
     const now = ctx.currentTime;
@@ -453,7 +453,7 @@ class WebAudioSounds {
 
   playInvitation() {
     if (!this.enabled) return;
-    const ctx = this.getContext();
+    const ctx = this.getAudioContext();
     
     // Create a more elaborate, attention-getting sound for invitations
     const now = ctx.currentTime;

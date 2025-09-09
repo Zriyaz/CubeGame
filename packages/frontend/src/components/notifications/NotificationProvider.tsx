@@ -20,14 +20,11 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
   const { fetchNotifications, subscribeToNotifications } = useNotificationApi();
 
   useEffect(() => {
-    // Fetch initial notifications
-    fetchNotifications();
-
-    // Subscribe to WebSocket notifications
-    const unsubscribe = subscribeToNotifications();
-
-    // Set up WebSocket event handlers
+    console.log('NotificationProvider: Initializing...');
+    
+    // Set up WebSocket event handlers FIRST
     const handleNotificationReceived = (data: { notification: Notification }) => {
+      console.log('🔔 Notification received:', data);
       addNotification(data.notification);
       
       // Play sound based on notification type
@@ -66,16 +63,32 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     };
 
     // Register event listeners
+    console.log('NotificationProvider: Registering event listeners...');
+    console.log('Events:', {
+      NOTIFICATION_RECEIVED: WS_SERVER_EVENTS.NOTIFICATION_RECEIVED,
+      NOTIFICATION_COUNT: WS_SERVER_EVENTS.NOTIFICATION_COUNT,
+    });
+    
     gameSocket.addSocketListener(WS_SERVER_EVENTS.NOTIFICATION_RECEIVED, handleNotificationReceived);
     gameSocket.addSocketListener(WS_SERVER_EVENTS.NOTIFICATION_COUNT, handleNotificationCount);
     gameSocket.addSocketListener(WS_SERVER_EVENTS.NOTIFICATION_BATCH, handleNotificationBatch);
     gameSocket.addSocketListener(WS_SERVER_EVENTS.NOTIFICATION_READ, handleNotificationRead);
     gameSocket.addSocketListener(WS_SERVER_EVENTS.NOTIFICATION_DELETED, handleNotificationDeleted);
+    
+    // NOW fetch initial notifications and subscribe
+    console.log('NotificationProvider: Fetching initial notifications...');
+    fetchNotifications();
+
+    // Subscribe to WebSocket notifications
+    console.log('NotificationProvider: Subscribing to notifications...');
+    const unsubscribe = subscribeToNotifications();
 
     // Request browser notification permission
     if (Notification.permission === 'default') {
       Notification.requestPermission();
     }
+    
+    console.log('NotificationProvider: Setup complete');
 
     return () => {
       // Cleanup event listeners
