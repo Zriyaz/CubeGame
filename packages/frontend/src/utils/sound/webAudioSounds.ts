@@ -400,6 +400,111 @@ class WebAudioSounds {
   get isEnabled() {
     return this.enabled;
   }
+
+  playNotification() {
+    if (!this.enabled) return;
+    const ctx = this.getContext();
+    
+    // Create a pleasant bell-like notification sound
+    const now = ctx.currentTime;
+    const fundamental = 800; // High pitched bell
+    
+    // Create 3 harmonics for a rich bell sound
+    [1, 2, 3].forEach((harmonic, index) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+      
+      osc.type = 'sine';
+      osc.frequency.value = fundamental * harmonic;
+      
+      filter.type = 'bandpass';
+      filter.frequency.value = fundamental * harmonic;
+      filter.Q.value = 30;
+      
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+      
+      // Amplitude envelope for bell-like decay
+      const volume = 0.15 / (harmonic * 0.8);
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(volume, now + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 1.5 / harmonic);
+      
+      osc.start(now);
+      osc.stop(now + 1.5);
+    });
+    
+    // Add a subtle click at the beginning
+    const click = ctx.createOscillator();
+    const clickGain = ctx.createGain();
+    click.type = 'square';
+    click.frequency.value = 2000;
+    click.connect(clickGain);
+    clickGain.connect(ctx.destination);
+    
+    clickGain.gain.setValueAtTime(0.05, now);
+    clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.02);
+    
+    click.start(now);
+    click.stop(now + 0.02);
+  }
+
+  playInvitation() {
+    if (!this.enabled) return;
+    const ctx = this.getContext();
+    
+    // Create a more elaborate, attention-getting sound for invitations
+    const now = ctx.currentTime;
+    
+    // Play a short ascending melody
+    const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
+    
+    notes.forEach((freq, index) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+      
+      osc.type = 'triangle';
+      osc.frequency.value = freq;
+      
+      filter.type = 'highpass';
+      filter.frequency.value = 200;
+      filter.Q.value = 1;
+      
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+      
+      const startTime = now + (index * 0.15);
+      gain.gain.setValueAtTime(0, startTime);
+      gain.gain.linearRampToValueAtTime(0.2, startTime + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.5);
+      
+      osc.start(startTime);
+      osc.stop(startTime + 0.5);
+    });
+    
+    // Add harmonics for richness
+    notes.forEach((freq, index) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      
+      osc.type = 'sine';
+      osc.frequency.value = freq * 2; // Octave higher
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      
+      const startTime = now + (index * 0.15);
+      gain.gain.setValueAtTime(0, startTime);
+      gain.gain.linearRampToValueAtTime(0.05, startTime + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.3);
+      
+      osc.start(startTime);
+      osc.stop(startTime + 0.3);
+    });
+  }
 }
 
 export const webAudioSounds = new WebAudioSounds();

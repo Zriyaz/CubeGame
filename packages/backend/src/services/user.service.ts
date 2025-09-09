@@ -296,4 +296,53 @@ export class UserService {
       return [];
     }
   }
+
+  /**
+   * Get online users excluding the current user
+   */
+  static async getOnlineUsers(excludeUserId: string): Promise<any[]> {
+    try {
+      const key = `active_users`;
+      const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
+      
+      // Get user IDs active in the last 5 minutes
+      const userIds = await getRedisClient().zrangebyscore(
+        key,
+        fiveMinutesAgo,
+        '+inf'
+      );
+
+      if (!userIds || userIds.length === 0) {
+        return [];
+      }
+
+      // Filter out current user and get user details
+      const users = await Promise.all(
+        userIds
+          .filter(userId => userId !== excludeUserId)
+          .map(async (userId) => {
+            const user = await this.getUserById(userId);
+            if (user) {
+              // Get current game if any
+              const currentGame = await getRedisClient().get(`user_current_game:${userId}`);
+              return {
+                id: user.id,
+                name: user.name,
+                avatarUrl: user.avatar_url,
+                isInGame: !!currentGame,
+                gameId: currentGame,
+              };
+            }
+            return null;
+          })
+      );
+
+      return users.filter(Boolean);
+    } catch (error) {
+      logger.error('Failed to get online users', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+      return [];
+    }
+  }
 }

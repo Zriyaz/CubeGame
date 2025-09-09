@@ -77,6 +77,18 @@ export class GameSoundManager {
         html5: true,
         preload: false,
       },
+      notification: {
+        src: ['/sounds/notification.webm', '/sounds/notification.mp3'],
+        volume: 0.6,
+        html5: true,
+        preload: false,
+      },
+      invitation: {
+        src: ['/sounds/invitation.webm', '/sounds/invitation.mp3'],
+        volume: 0.7,
+        html5: true,
+        preload: false,
+      },
     };
   }
   
@@ -117,6 +129,12 @@ export class GameSoundManager {
           break;
         case 'backgroundMusic':
           webAudioSounds.playBackgroundMusic();
+          break;
+        case 'notification':
+          webAudioSounds.playNotification();
+          break;
+        case 'invitation':
+          webAudioSounds.playInvitation();
           break;
         default:
           console.debug(`No Web Audio fallback for sound: ${soundName}`);

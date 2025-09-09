@@ -41,6 +41,13 @@ router.get(
   UserController.getActiveUsers
 );
 
+// Get online users (authenticated only)
+router.get(
+  '/online',
+  authenticate,
+  UserController.getOnlineUsers
+);
+
 // Get specific user profile (public)
 router.get(
   '/:userId',

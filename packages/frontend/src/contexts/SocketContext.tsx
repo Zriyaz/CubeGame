@@ -83,6 +83,9 @@ export function SocketProvider({ children }: SocketProviderProps) {
           // Pass the actual token to WebSocket
           gameSocket.connect(data.token);
           setupEventHandlers();
+          
+          // Subscribe to notifications
+          gameSocket.emit('notification:subscribe');
           return;
         }
       }

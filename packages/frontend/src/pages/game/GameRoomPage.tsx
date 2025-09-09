@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { YStack, XStack, Stack, Text, ScrollView, Avatar, Spinner } from 'tamagui';
 import { Copy, Crown, CheckCircle, Clock, MessageSquare, Send } from 'lucide-react';
 import { Button, Card, Input } from '@/components/ui';
+import { InviteModal } from '@/components/game/InviteModal';
 import { useAuthStore } from '@/stores/auth.store';
 import { soundManager } from '@/utils/sound/soundManager';
 import { useGameDetails, useStartGame, useLeaveGame, useGameSubscription } from '@/hooks/useGame';
@@ -30,6 +31,7 @@ export function GameRoomPage() {
   const [localReadyStates, setLocalReadyStates] = useState<Record<string, boolean>>({});
   const [chatMessage, setChatMessage] = useState('');
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
   // API hooks
   const { data: gameDetails, isLoading, error } = useGameDetails(gameId!);
@@ -41,11 +43,11 @@ export function GameRoomPage() {
 
   // Get current game from store (updated by WebSocket)
   const currentGame = useGameStore((state) => state.currentGame);
-  
+
   // Set up chat message listener
   useEffect(() => {
     if (!gameId) return;
-    
+
     const handleChatMessage = (message: WSChatMessage) => {
       if (message.gameId === gameId) {
         const newMessage: ChatMessage = {
@@ -61,16 +63,16 @@ export function GameRoomPage() {
     };
 
     gameSocket.on('chatMessage', handleChatMessage);
-    
+
     return () => {
       gameSocket.off('chatMessage', handleChatMessage);
     };
   }, [gameId]);
-  
+
   // Set up ready state listener
   useEffect(() => {
     if (!gameId) return;
-    
+
     const handlePlayerReadyState = (data: { gameId: string; userId: string; isReady: boolean }) => {
       if (data.gameId === gameId) {
         setLocalReadyStates(prev => ({
@@ -81,15 +83,15 @@ export function GameRoomPage() {
     };
 
     gameSocket.on('playerReadyState', handlePlayerReadyState);
-    
+
     return () => {
       gameSocket.off('playerReadyState', handlePlayerReadyState);
     };
   }, [gameId]);
-  
+
   // Use WebSocket data if available, otherwise use API data
   const game = currentGame || gameDetails;
-  
+
   // Ensure game has required structure
   if (game && !game.players) {
     game.players = [];
@@ -97,7 +99,7 @@ export function GameRoomPage() {
 
   const currentPlayer = game?.players?.find(p => p.userId === user?.id);
   const isHost = game?.creator?.id === user?.id || game?.creator_id === user?.id;
-  
+
   // Merge ready states from API and WebSocket
   const getPlayerReadyState = (playerId: string) => {
     if (localReadyStates[playerId] !== undefined) {
@@ -106,7 +108,7 @@ export function GameRoomPage() {
     const player = game?.players?.find(p => p.userId === playerId);
     return player?.isReady || false;
   };
-  
+
   const isReady = user?.id ? getPlayerReadyState(user.id) : false;
   const allPlayersReady = game?.players?.every(p => getPlayerReadyState(p.userId)) || false;
   const canStartGame = isHost && allPlayersReady && (game?.players?.length || 0) >= 2;
@@ -183,224 +185,252 @@ export function GameRoomPage() {
 
   return (
     <YStack flex={1} backgroundColor="$background">
-      <ScrollView 
+      <ScrollView
         contentContainerStyle={{
           flexGrow: 1,
         }}
       >
         <Stack flex={1} alignItems="center" width="100%">
           <YStack padding="$5" space="$5" width="100%" maxWidth={1200}>
-          {/* Game Header */}
-          <Card variant="elevated" padding="$4">
-            <XStack justifyContent="space-between" alignItems="center" flexWrap="wrap" space="$4">
-              <YStack space="$2">
-                <Text fontSize="$2xl" fontWeight="bold">{game.name}</Text>
-                <XStack space="$4">
-                  <XStack space="$1">
-                    <Text color="$textMuted">Board:</Text>
-                    <Text color="$neonBlue" fontWeight="bold">{game.boardSize || game.board_size}x{game.boardSize || game.board_size}</Text>
+            {/* Game Header */}
+            <Card variant="elevated" padding="$4">
+              <XStack justifyContent="space-between" alignItems="center" flexWrap="wrap" space="$4">
+                <YStack space="$2">
+                  <Text fontSize="$2xl" fontWeight="bold">{game.name}</Text>
+                  <XStack space="$4">
+                    <XStack space="$1">
+                      <Text color="$textMuted">Board:</Text>
+                      <Text color="$neonBlue" fontWeight="bold">{game.boardSize || game.board_size}x{game.boardSize || game.board_size}</Text>
+                    </XStack>
+                    <XStack space="$1">
+                      <Text color="$textMuted">Players:</Text>
+                      <Text color="$neonGreen" fontWeight="bold">{game.players?.length || 0}/{game.max_players || game.maxPlayers}</Text>
+                    </XStack>
                   </XStack>
-                  <XStack space="$1">
-                    <Text color="$textMuted">Players:</Text>
-                    <Text color="$neonGreen" fontWeight="bold">{game.players?.length || 0}/{game.max_players || game.maxPlayers}</Text>
-                  </XStack>
-                </XStack>
-              </YStack>
-              
-              <Card
-                interactive
-                onPress={copyInviteCode}
-                backgroundColor="$surface"
-                padding="$3"
-                borderWidth={2}
-                borderColor="$neonBlue"
-                borderStyle="dashed"
-              >
-                <XStack space="$2" alignItems="center">
-                  <Text fontSize="$sm" color="$textMuted">Invite Code:</Text>
-                  <Text fontSize="$lg" fontWeight="bold" color="$neonBlue" fontFamily="monospace">
-                    {game.invite_code}
-                  </Text>
-                  <Copy size={16} color="$neonBlue" />
-                </XStack>
-              </Card>
-            </XStack>
-          </Card>
-
-          <XStack space="$4" flexWrap="wrap">
-            {/* Players Section */}
-            <YStack flex={2} minWidth={300} space="$4">
-              <Card variant="elevated" padding="$4" space="$4">
-                <Text fontSize="$lg" fontWeight="bold">Players ({game.players?.length || 0}/{game.max_players || game.maxPlayers})</Text>
-                
-                <YStack space="$3">
-                  {(game.players || []).map((player) => (
-                    <PlayerCard 
-                      key={player.userId} 
-                      player={{
-                        ...player,
-                        isHost: player.userId === (game.creator?.id || game.creator_id),
-                        isReady: getPlayerReadyState(player.userId),
-                        isYou: player.userId === user?.id,
-                      }} 
-                    />
-                  ))}
-                  
-                  {/* Empty slots */}
-                  {Array.from({ length: (game.max_players || game.maxPlayers || 4) - (game.players?.length || 0) }).map((_, index) => (
-                    <Card
-                      key={`empty-${index}`}
-                      padding="$3"
-                      borderStyle="dashed"
-                      borderColor="$borderColor"
-                      opacity={0.5}
-                    >
-                      <XStack space="$3" alignItems="center">
-                        <Stack
-                          width={48}
-                          height={48}
-                          borderRadius={24}
-                          backgroundColor="$surface"
-                          borderWidth={2}
-                          borderColor="$borderColor"
-                          borderStyle="dashed"
-                        />
-                        <Text color="$textMuted">Waiting for player...</Text>
-                      </XStack>
-                    </Card>
-                  ))}
                 </YStack>
 
-                {/* Action Buttons */}
-                <XStack space="$3" justifyContent="center">
-                  {isHost ? (
-                    <Button
-                      size="$5"
-                      onPress={handleStartGame}
-                      disabled={!canStartGame || startGameMutation.isPending}
-                      loading={startGameMutation.isPending}
-                      fullWidth
-                    >
-                      {canStartGame ? 'Start Game' : `Waiting for ${allPlayersReady ? 'more players' : 'all players ready'}`}
-                    </Button>
-                  ) : (
-                    <Button
-                      size="$5"
-                      variant={isReady ? 'primary' : 'secondary'}
-                      onPress={handleReady}
-                      fullWidth
-                    >
-                      {isReady ? '✓ Ready' : 'Click when Ready'}
-                    </Button>
-                  )}
-                </XStack>
-              </Card>
-
-              <Button
-                variant="danger"
-                onPress={handleLeaveGame}
-                loading={leaveGameMutation.isPending}
-                fullWidth
-              >
-                Leave Game
-              </Button>
-            </YStack>
-
-            {/* Chat Section */}
-            <YStack flex={1} minWidth={300}>
-              <Card variant="elevated" height={500} padding={0}>
-                <YStack flex={1}>
-                  <XStack 
-                    padding="$3" 
-                    borderBottomWidth={1} 
-                    borderBottomColor="$borderColor"
-                    alignItems="center"
-                    space="$2"
-                  >
-                    <MessageSquare size={20} color="$neonBlue" />
-                    <Text fontSize="$lg" fontWeight="bold">Game Chat</Text>
+                <Card
+                  interactive
+                  onPress={copyInviteCode}
+                  backgroundColor="$surface"
+                  padding="$3"
+                  borderWidth={2}
+                  borderColor="$neonBlue"
+                  borderStyle="dashed"
+                >
+                  <XStack space="$2" alignItems="center">
+                    <Text fontSize="$sm" color="$textMuted">Invite Code:</Text>
+                    <Text fontSize="$lg" fontWeight="bold" color="$neonBlue" fontFamily="monospace">
+                      {game.invite_code}
+                    </Text>
+                    <Copy size={16} color="$neonBlue" />
                   </XStack>
-                  
-                  <ScrollView 
-                    flex={1} 
-                    padding="$4"
-                    style={{
-                      background: 'rgba(0, 0, 0, 0.2)',
-                    }}
-                  >
-                    <YStack space="$3">
-                      {chatMessages.map((msg) => (
-                        <YStack 
-                          key={msg.id} 
-                          space="$1.5"
-                          padding="$3"
-                          borderRadius={8}
-                          style={{
-                            background: 'rgba(255, 255, 255, 0.03)',
-                            borderLeft: '3px solid #00D4FF',
-                          }}
+                </Card>
+              </XStack>
+            </Card>
+
+            <XStack space="$4" flexWrap="wrap">
+              {/* Players Section */}
+              <YStack flex={2} minWidth={300} space="$4">
+                <Card variant="elevated" padding="$4" space="$4">
+                  <Text fontSize="$lg" fontWeight="bold">Players ({game.players?.length || 0}/{game.max_players || game.maxPlayers})</Text>
+
+                  <YStack space="$3">
+                    {(game.players || []).map((player) => (
+                      <PlayerCard
+                        key={player.userId}
+                        player={{
+                          ...player,
+                          isHost: player.userId === (game.creator?.id || game.creator_id),
+                          isReady: getPlayerReadyState(player.userId),
+                          isYou: player.userId === user?.id,
+                        }}
+                      />
+                    ))}
+
+                    {/* Empty slots */}
+                    {Array.from({ length: (game.max_players || game.maxPlayers || 4) - (game.players?.length || 0) }).map((_, index) => (
+                      <Card
+                        key={`empty-${index}`}
+                        padding="$3"
+                        borderStyle="dashed"
+                        borderColor="$borderColor"
+                        opacity={0.5}
+                      >
+                        <XStack space="$3" alignItems="center">
+                          <Stack
+                            width={48}
+                            height={48}
+                            borderRadius={24}
+                            backgroundColor="$surface"
+                            borderWidth={2}
+                            borderColor="$borderColor"
+                            borderStyle="dashed"
+                          />
+                          <Text color="$textMuted">Waiting for player...</Text>
+                        </XStack>
+                      </Card>
+                    ))}
+                  </YStack>
+
+                  {/* Action Buttons */}
+                  <YStack space="$3">
+                    {/* Invite Button - Only for host and before game starts */}
+                    {isHost && game.status === GAME_STATUS.WAITING && (
+                      <Button
+                        size="$4"
+                        variant="secondary"
+                        onPress={() => {
+                          setShowInviteModal(true);
+                        }}
+                        icon={<Send size={16} />}
+                        fullWidth
+                      >
+                        Invite Players
+                      </Button>
+                    )}
+
+                    <XStack space="$3" justifyContent="center">
+                      {isHost ? (
+                        <Button
+                          size="$5"
+                          onPress={handleStartGame}
+                          disabled={!canStartGame || startGameMutation.isPending}
+                          loading={startGameMutation.isPending}
+                          fullWidth
                         >
-                          <XStack space="$3" alignItems="baseline">
-                            <Text 
-                              fontSize={14} 
-                              fontWeight="bold" 
-                              color="$neonBlue"
-                              style={{ fontFamily: 'Rajdhani, monospace' }}
-                            >
-                              {msg.userName}
-                            </Text>
-                            <Text fontSize={11} color="$textMuted" opacity={0.6}>
-                              {msg.timestamp.toLocaleTimeString()}
-                            </Text>
-                          </XStack>
-                          <Text fontSize={15} color="$text" opacity={0.9}>
-                            {msg.message}
-                          </Text>
-                        </YStack>
-                      ))}
-                      
-                      {chatMessages.length === 0 && (
-                        <Text 
-                          color="$textMuted" 
-                          textAlign="center" 
-                          paddingVertical="$8"
-                          fontSize={16}
-                          opacity={0.5}
+                          {canStartGame ? 'Start Game' : `Waiting for ${allPlayersReady ? 'more players' : 'all players ready'}`}
+                        </Button>
+                      ) : (
+                        <Button
+                          size="$5"
+                          variant={isReady ? 'primary' : 'secondary'}
+                          onPress={handleReady}
+                          fullWidth
                         >
-                          No messages yet. Say hello!
-                        </Text>
+                          {isReady ? '✓ Ready' : 'Click when Ready'}
+                        </Button>
                       )}
-                    </YStack>
-                  </ScrollView>
-                  
-                  <XStack 
-                    padding="$3" 
-                    borderTopWidth={1} 
-                    borderTopColor="$borderColor"
-                    space="$2"
-                  >
-                    <Input
+                    </XStack>
+                  </YStack>
+                </Card>
+
+                <Button
+                  variant="danger"
+                  onPress={handleLeaveGame}
+                  loading={leaveGameMutation.isPending}
+                  fullWidth
+                >
+                  Leave Game
+                </Button>
+              </YStack>
+
+              {/* Chat Section */}
+              <YStack flex={1} minWidth={300}>
+                <Card variant="elevated" height={500} padding={0}>
+                  <YStack flex={1}>
+                    <XStack
+                      padding="$3"
+                      borderBottomWidth={1}
+                      borderBottomColor="$borderColor"
+                      alignItems="center"
+                      space="$2"
+                    >
+                      <MessageSquare size={20} color="$neonBlue" />
+                      <Text fontSize="$lg" fontWeight="bold">Game Chat</Text>
+                    </XStack>
+
+                    <ScrollView
                       flex={1}
-                      placeholder="Type a message..."
-                      value={chatMessage}
-                      onChangeText={setChatMessage}
-                      onSubmitEditing={sendChatMessage}
-                    />
-                    <Button
-                      size="$3"
-                      circular
-                      onPress={sendChatMessage}
-                      disabled={!chatMessage.trim()}
-                      icon={<Send size={16} />}
-                    />
-                  </XStack>
-                </YStack>
-              </Card>
-            </YStack>
-          </XStack>
+                      padding="$4"
+                      style={{
+                        background: 'rgba(0, 0, 0, 0.2)',
+                      }}
+                    >
+                      <YStack space="$3">
+                        {chatMessages.map((msg) => (
+                          <YStack
+                            key={msg.id}
+                            space="$1.5"
+                            padding="$3"
+                            borderRadius={8}
+                            style={{
+                              background: 'rgba(255, 255, 255, 0.03)',
+                              borderLeft: '3px solid #00D4FF',
+                            }}
+                          >
+                            <XStack space="$3" alignItems="baseline">
+                              <Text
+                                fontSize={14}
+                                fontWeight="bold"
+                                color="$neonBlue"
+                                style={{ fontFamily: 'Rajdhani, monospace' }}
+                              >
+                                {msg.userName}
+                              </Text>
+                              <Text fontSize={11} color="$textMuted" opacity={0.6}>
+                                {msg.timestamp.toLocaleTimeString()}
+                              </Text>
+                            </XStack>
+                            <Text fontSize={15} color="$text" opacity={0.9}>
+                              {msg.message}
+                            </Text>
+                          </YStack>
+                        ))}
+
+                        {chatMessages.length === 0 && (
+                          <Text
+                            color="$textMuted"
+                            textAlign="center"
+                            paddingVertical="$8"
+                            fontSize={16}
+                            opacity={0.5}
+                          >
+                            No messages yet. Say hello!
+                          </Text>
+                        )}
+                      </YStack>
+                    </ScrollView>
+
+                    <XStack
+                      padding="$3"
+                      borderTopWidth={1}
+                      borderTopColor="$borderColor"
+                      space="$2"
+                    >
+                      <Input
+                        flex={1}
+                        placeholder="Type a message..."
+                        value={chatMessage}
+                        onChangeText={setChatMessage}
+                        onSubmitEditing={sendChatMessage}
+                      />
+                      <Button
+                        size="$3"
+                        circular
+                        onPress={sendChatMessage}
+                        disabled={!chatMessage.trim()}
+                        icon={<Send size={16} />}
+                      />
+                    </XStack>
+                  </YStack>
+                </Card>
+              </YStack>
+            </XStack>
           </YStack>
         </Stack>
       </ScrollView>
+
+      {/* Invite Modal */}
+      {game && (
+        <InviteModal
+          isOpen={showInviteModal}
+          onClose={() => setShowInviteModal(false)}
+          gameId={game.id}
+          gameName={game.name}
+          currentPlayers={game.players.map(p => p.userId)}
+        />
+      )}
     </YStack>
   );
 }
@@ -413,32 +443,32 @@ interface ExtendedPlayer extends Player {
 
 function PlayerCard({ player }: { player: ExtendedPlayer }) {
   return (
-    <Card 
-      padding="$4" 
+    <Card
+      padding="$4"
       style={{
-        background: player.isReady 
+        background: player.isReady
           ? 'linear-gradient(135deg, rgba(0, 255, 136, 0.08) 0%, rgba(0, 255, 136, 0.04) 100%)'
           : 'rgba(255, 255, 255, 0.02)',
         borderColor: player.isReady ? 'rgba(0, 255, 136, 0.3)' : 'rgba(255, 255, 255, 0.1)',
         borderWidth: 1,
-        boxShadow: player.isReady 
+        boxShadow: player.isReady
           ? '0 0 20px rgba(0, 255, 136, 0.15)'
           : '0 4px 15px rgba(0, 0, 0, 0.3)',
       }}
     >
       <XStack space="$3" alignItems="center">
         <Stack position="relative">
-          <Avatar 
-            size={56} 
-            circular 
-            borderWidth={3} 
+          <Avatar
+            size={56}
+            circular
+            borderWidth={3}
             style={{
               borderColor: player.color,
               boxShadow: `0 0 20px ${player.color}66`,
             }}
           >
             <Avatar.Image src={player.avatarUrl} />
-            <Avatar.Fallback 
+            <Avatar.Fallback
               style={{
                 background: `linear-gradient(135deg, ${player.color} 0%, ${player.color}CC 100%)`,
               }}
@@ -448,7 +478,7 @@ function PlayerCard({ player }: { player: ExtendedPlayer }) {
               </Text>
             </Avatar.Fallback>
           </Avatar>
-          
+
           {player.isHost && (
             <Stack
               position="absolute"
@@ -468,11 +498,11 @@ function PlayerCard({ player }: { player: ExtendedPlayer }) {
             </Stack>
           )}
         </Stack>
-        
+
         <YStack flex={1} space="$2">
           <XStack space="$2" alignItems="center">
-            <Text 
-              fontWeight="900" 
+            <Text
+              fontWeight="900"
               fontSize={18}
               style={{ fontFamily: 'Rajdhani, monospace' }}
             >
@@ -499,7 +529,7 @@ function PlayerCard({ player }: { player: ExtendedPlayer }) {
               </Stack>
             )}
           </XStack>
-          
+
           <XStack space="$2" alignItems="center">
             <Stack
               width={14}
@@ -515,13 +545,13 @@ function PlayerCard({ player }: { player: ExtendedPlayer }) {
               paddingVertical="$1"
               borderRadius={6}
               style={{
-                background: player.isReady 
+                background: player.isReady
                   ? 'rgba(0, 255, 136, 0.2)'
                   : 'rgba(255, 255, 255, 0.05)',
               }}
             >
-              <Text 
-                fontSize={12} 
+              <Text
+                fontSize={12}
                 color={player.isReady ? "$neonGreen" : "$textMuted"}
                 fontWeight="bold"
                 textTransform="uppercase"
@@ -532,7 +562,7 @@ function PlayerCard({ player }: { player: ExtendedPlayer }) {
             </Stack>
           </XStack>
         </YStack>
-        
+
         {player.isReady ? (
           <Stack
             width={32}

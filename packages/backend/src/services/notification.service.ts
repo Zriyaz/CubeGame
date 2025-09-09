@@ -39,6 +39,52 @@ export class NotificationService {
     return NotificationService.sendGameInvitations(gameId, hostId, userIds);
   }
 
+  /**
+   * Get user notification preferences
+   */
+  static async getUserPreferences(userId: string): Promise<any> {
+    try {
+      let preferences = await this.notificationRepo.getPreferences(userId);
+      
+      // If no preferences exist, create defaults
+      if (!preferences) {
+        preferences = {
+          user_id: userId,
+          game_invitations: true,
+          game_updates: true,
+          achievements: true,
+          system_announcements: true,
+          email_notifications: false,
+          push_notifications: true,
+        };
+        
+        // Try to create default preferences
+        try {
+          await this.notificationRepo.updatePreferences(userId, preferences);
+        } catch (createError) {
+          logger.warn('Could not create default preferences', {
+            userId,
+            error: createError instanceof Error ? createError.message : 'Unknown error'
+          });
+        }
+      }
+      
+      return preferences;
+    } catch (error) {
+      logger.error('Failed to get user preferences', { error, userId });
+      // Return defaults on error
+      return {
+        user_id: userId,
+        game_invitations: true,
+        game_updates: true,
+        achievements: true,
+        system_announcements: true,
+        email_notifications: false,
+        push_notifications: true,
+      };
+    }
+  }
+
   async getUnreadCount(userId: string) {
     return NotificationService.getUnreadCount(userId);
   }
@@ -60,7 +106,20 @@ export class NotificationService {
   }
 
   async updatePreferences(userId: string, preferences: any) {
-    return NotificationService.notificationRepo.updatePreferences(userId, preferences);
+    return NotificationService.updateUserPreferences(userId, preferences);
+  }
+
+  /**
+   * Update user notification preferences
+   */
+  static async updateUserPreferences(userId: string, updates: any): Promise<any> {
+    try {
+      const updatedPreferences = await this.notificationRepo.updatePreferences(userId, updates);
+      return updatedPreferences;
+    } catch (error) {
+      logger.error('Failed to update user preferences', { error, userId });
+      throw error;
+    }
   }
 
   /**
@@ -68,8 +127,19 @@ export class NotificationService {
    */
   static async createNotification(data: CreateNotificationDto): Promise<Notification> {
     try {
-      // Check user preferences
-      const preferences = await this.notificationRepo.getPreferences(data.userId);
+      // Check user preferences - allow notifications if no preferences exist
+      let preferences = null;
+      try {
+        preferences = await this.notificationRepo.getPreferences(data.userId);
+      } catch (prefError) {
+        // If error getting preferences, allow the notification
+        logger.debug('Error getting preferences, allowing notification', {
+          userId: data.userId,
+          type: data.type,
+          error: prefError instanceof Error ? prefError.message : 'Unknown error'
+        });
+      }
+      
       if (preferences && !this.shouldSendNotification(data.type, preferences)) {
         logger.info('Notification blocked by user preferences', {
           userId: data.userId,

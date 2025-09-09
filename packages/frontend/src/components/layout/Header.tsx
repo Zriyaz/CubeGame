@@ -4,6 +4,7 @@ import { Settings, LogOut, Zap, Trophy, Coins, Activity, Home, Gamepad2, History
 import { useAuthStore } from '@/stores/auth.store';
 import { useLogout } from '@/hooks/useAuth';
 import { SoundToggle } from '@/components/game/GameControls';
+import { NotificationBell } from '@/components/notifications';
 import { routes } from '@/routes';
 import { useEffect, useState } from 'react';
 import { soundManager } from '@/utils/sound/soundManager';
@@ -102,21 +103,21 @@ export function Header({ showBackButton = false, title }: HeaderProps) {
               LEVEL {playerStats.level}
             </Text>
           </XStack>
-          
+
           <XStack alignItems="center" space="$2">
             <Zap size={14} color="#00D4FF" />
             <Text fontSize={12} color="#00D4FF" fontWeight="bold">
               {playerStats.xp} XP
             </Text>
           </XStack>
-          
+
           <XStack alignItems="center" space="$2">
             <Coins size={14} color="#FFD700" />
             <Text fontSize={12} color="#FFD700" fontWeight="bold">
               {playerStats.coins.toLocaleString()}
             </Text>
           </XStack>
-          
+
           <XStack alignItems="center" space="$2">
             <Activity size={14} color="#00FF88" />
             <Text fontSize={12} color="#00FF88" fontWeight="bold">
@@ -186,7 +187,7 @@ export function Header({ showBackButton = false, title }: HeaderProps) {
               </YStack>
             </Stack>
           )}
-          
+
           {title && (
             <Stack
               paddingHorizontal="$3"
@@ -197,9 +198,9 @@ export function Header({ showBackButton = false, title }: HeaderProps) {
                 border: '1px solid rgba(0, 212, 255, 0.3)',
               }}
             >
-              <Text 
-                fontSize={14} 
-                fontWeight="bold" 
+              <Text
+                fontSize={14}
+                fontWeight="bold"
                 color="$neonBlue"
                 style={{ fontFamily: 'Rajdhani, monospace' }}
               >
@@ -228,7 +229,7 @@ export function Header({ showBackButton = false, title }: HeaderProps) {
                 scale: 0.95,
               }}
               style={{
-                background: isActive(item.route) 
+                background: isActive(item.route)
                   ? `linear-gradient(135deg, ${item.color}22 0%, ${item.color}11 100%)`
                   : 'transparent',
                 borderWidth: 1,
@@ -237,18 +238,18 @@ export function Header({ showBackButton = false, title }: HeaderProps) {
               }}
             >
               <XStack alignItems="center" space="$2">
-                <item.icon 
-                  size={18} 
+                <item.icon
+                  size={18}
                   color={isActive(item.route) ? item.color : '#B8B8C8'}
                   style={{
                     filter: isActive(item.route) ? `drop-shadow(0 0 10px ${item.color})` : 'none',
                   }}
                 />
-                <Text 
-                  fontSize={14} 
+                <Text
+                  fontSize={14}
                   fontWeight="bold"
                   color={isActive(item.route) ? item.color : '$textMuted'}
-                  style={{ 
+                  style={{
                     fontFamily: 'Rajdhani, monospace',
                     letterSpacing: 1,
                   }}
@@ -263,13 +264,15 @@ export function Header({ showBackButton = false, title }: HeaderProps) {
         {/* User Section */}
         <XStack alignItems="center" space="$3">
           <SoundToggle size={20} />
-          
+
+          {user && <NotificationBell />}
+
           <Stack
             width={1}
             height={30}
             backgroundColor="rgba(255, 255, 255, 0.1)"
           />
-          
+
           <Button
             size="$3"
             onPress={() => handleNavigation(routes.settings)}
@@ -284,7 +287,7 @@ export function Header({ showBackButton = false, title }: HeaderProps) {
             }}
             icon={<Settings size={20} color="#B8B8C8" />}
           />
-          
+
           {user && (
             <>
               <Stack
@@ -305,7 +308,7 @@ export function Header({ showBackButton = false, title }: HeaderProps) {
                     }}
                   >
                     <Avatar.Image src={user.avatar_url} />
-                    <Avatar.Fallback 
+                    <Avatar.Fallback
                       backgroundColor="$neonBlue"
                       style={{
                         background: 'linear-gradient(135deg, #00D4FF 0%, #0099CC 100%)',
@@ -316,11 +319,11 @@ export function Header({ showBackButton = false, title }: HeaderProps) {
                       </Text>
                     </Avatar.Fallback>
                   </Avatar>
-                  
+
                   <YStack space="$0.5">
-                    <Text 
-                      fontSize={14} 
-                      fontWeight="bold" 
+                    <Text
+                      fontSize={14}
+                      fontWeight="bold"
                       color="$white"
                       style={{ fontFamily: 'Rajdhani, monospace' }}
                     >
@@ -332,7 +335,7 @@ export function Header({ showBackButton = false, title }: HeaderProps) {
                   </YStack>
                 </XStack>
               </Stack>
-              
+
               <Button
                 size="$3"
                 onPress={handleLogout}

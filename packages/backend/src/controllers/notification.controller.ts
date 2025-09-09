@@ -190,25 +190,17 @@ export class NotificationController {
         throw new AppError(401, 'Unauthorized');
       }
 
-      const notificationRepo = new (
-        await import('../repositories/notification.repository')
-      ).NotificationRepository();
-      const preferences = await notificationRepo.getPreferences(userId);
-
-      if (!preferences) {
-        // Create default preferences
-        res.json({
-          userId,
-          gameInvitations: true,
-          gameUpdates: true,
-          achievements: true,
-          systemAnnouncements: true,
-          emailNotifications: false,
-          pushNotifications: true,
-        });
-      } else {
-        res.json(preferences);
-      }
+      const preferences = await NotificationService.getUserPreferences(userId);
+      
+      res.json({
+        userId: preferences.user_id || userId,
+        gameInvitations: preferences.game_invitations ?? true,
+        gameUpdates: preferences.game_updates ?? true,
+        achievements: preferences.achievements ?? true,
+        systemAnnouncements: preferences.system_announcements ?? true,
+        emailNotifications: preferences.email_notifications ?? false,
+        pushNotifications: preferences.push_notifications ?? true,
+      });
     } catch (error) {
       logger.error('Failed to get notification preferences', {
         userId: req.userId,
@@ -234,10 +226,7 @@ export class NotificationController {
 
       const updates = req.body as UpdatePreferencesRequest;
 
-      const notificationRepo = new (
-        await import('../repositories/notification.repository')
-      ).NotificationRepository();
-      const preferences = await notificationRepo.updatePreferences(userId, updates);
+      const preferences = await NotificationService.updateUserPreferences(userId, updates);
 
       res.json(preferences);
     } catch (error) {

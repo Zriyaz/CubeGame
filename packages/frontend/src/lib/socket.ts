@@ -207,6 +207,55 @@ class GameSocket {
   get socketId(): string | undefined {
     return this.socket?.id;
   }
+
+  /**
+   * Subscribe to notifications
+   */
+  subscribeToNotifications() {
+    this.socket?.emit(WS_CLIENT_EVENTS.NOTIFICATION_SUBSCRIBE);
+  }
+
+  /**
+   * Unsubscribe from notifications
+   */
+  unsubscribeFromNotifications() {
+    this.socket?.emit(WS_CLIENT_EVENTS.NOTIFICATION_UNSUBSCRIBE);
+  }
+
+  /**
+   * Mark notification as read
+   */
+  markNotificationAsRead(notificationId: string) {
+    this.socket?.emit(WS_CLIENT_EVENTS.NOTIFICATION_MARK_READ, { notificationId });
+  }
+
+  /**
+   * Mark all notifications as read
+   */
+  markAllNotificationsAsRead() {
+    this.socket?.emit(WS_CLIENT_EVENTS.NOTIFICATION_MARK_ALL_READ);
+  }
+
+  /**
+   * Update notification preferences
+   */
+  updateNotificationPreferences(preferences: any) {
+    this.socket?.emit(WS_CLIENT_EVENTS.NOTIFICATION_UPDATE_PREFERENCES, preferences);
+  }
+
+  /**
+   * Add event listener for native socket events
+   */
+  addSocketListener(event: string, callback: (...args: any[]) => void) {
+    this.socket?.on(event, callback);
+  }
+
+  /**
+   * Remove event listener for native socket events
+   */
+  removeSocketListener(event: string, callback: (...args: any[]) => void) {
+    this.socket?.off(event, callback);
+  }
 }
 
 // Export singleton instance

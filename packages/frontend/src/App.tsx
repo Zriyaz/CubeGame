@@ -13,6 +13,7 @@ import { routes } from './routes';
 // Components
 import { AppLayout } from './components/layout/AppLayout';
 import { AuthGuard } from './components/auth/AuthGuard';
+import { NotificationProvider, NotificationPanel } from './components/notifications';
 
 // Contexts
 import { SocketProvider } from './contexts/SocketContext';
@@ -58,21 +59,22 @@ function AppContent() {
   return (
     <BrowserRouter>
       <SocketProvider>
-        <Routes>
-          {/* Public Routes */}
-          <Route
-            path={routes.landing}
-            element={isAuthenticated ? <Navigate to={routes.dashboard} replace /> : <LandingPage />}
-          />
-          {/* Redirect login to landing page */}
-          <Route
-            path={routes.login}
-            element={<Navigate to={routes.landing} replace />}
-          />
+        <NotificationProvider>
+          <Routes>
+            {/* Public Routes */}
+            <Route
+              path={routes.landing}
+              element={isAuthenticated ? <Navigate to={routes.dashboard} replace /> : <LandingPage />}
+            />
+            {/* Redirect login to landing page */}
+            <Route
+              path={routes.login}
+              element={<Navigate to={routes.landing} replace />}
+            />
 
-          {/* Protected Routes */}
-          <Route element={<AuthGuard />}>
-            <Route element={<AppLayout />}>
+            {/* Protected Routes */}
+            <Route element={<AuthGuard />}>
+              <Route element={<AppLayout />}>
             {/* Dashboard */}
             <Route path={routes.dashboard} element={<DashboardPage />} />
             
@@ -98,6 +100,10 @@ function AppContent() {
         {/* Catch all - redirect to landing */}
         <Route path="*" element={<Navigate to={routes.landing} replace />} />
       </Routes>
+      
+      {/* Notification Panel - Only shown when authenticated */}
+      {isAuthenticated && <NotificationPanel />}
+      </NotificationProvider>
       </SocketProvider>
     </BrowserRouter>
   );

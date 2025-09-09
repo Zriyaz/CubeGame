@@ -197,4 +197,31 @@ export class UserController {
       next(error);
     }
   }
+
+  /**
+   * Get online users (excludes current user)
+   */
+  static async getOnlineUsers(
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      if (!req.userId) {
+        throw new AppError(401, 'Unauthorized');
+      }
+
+      logger.info('Get online users requested', { userId: req.userId });
+
+      const onlineUsers = await UserService.getOnlineUsers(req.userId);
+      
+      res.json({ users: onlineUsers });
+    } catch (error) {
+      logger.error('Failed to get online users', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        userId: req.userId,
+      });
+      next(error);
+    }
+  }
 }
