@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { YStack, XStack, Stack, Text, AnimatePresence } from 'tamagui';
+import { YStack, XStack, Stack, Text } from 'tamagui';
 import { Trophy, Award, Target, Clock, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -40,16 +40,12 @@ export function GameResultsPage() {
   });
 
   // Fetch game data with refetch on mount to ensure fresh data
-  const { data: gameDetails, isLoading, refetch } = useGameDetails(gameId!) as {
+  const { data: gameDetails, isLoading, isError, error } = useGameDetails(gameId!, { refetchOnMount: true }) as {
     data: GameWithDetailsExtended | undefined;
     isLoading: boolean;
-    refetch: () => void;
+    isError: boolean;
+    error: any;
   };
-
-  // Refetch on mount to ensure we have the latest game status
-  useEffect(() => {
-    refetch();
-  }, [refetch]);
 
   // Calculate game stats after game details are loaded
   useEffect(() => {
@@ -95,10 +91,35 @@ export function GameResultsPage() {
     setTimeout(() => setShowPlayers(true), 1000);
   }, [gameDetails, user]);
 
-  if (isLoading || !gameDetails) {
+  // Early returns AFTER all hooks - this ensures hooks are always called in the same order
+  if (isLoading) {
     return (
       <Stack flex={1} alignItems="center" justifyContent="center">
         <Text>Loading game results...</Text>
+      </Stack>
+    );
+  }
+
+  // Handle error state
+  if (isError) {
+    return (
+      <Stack flex={1} alignItems="center" justifyContent="center" gap="$4">
+        <Text fontSize="$lg" color="$red10">Error loading game results</Text>
+        <Text color="$textMuted">{error?.message || 'Unknown error'}</Text>
+        <Button onPress={() => navigate(routes.dashboard)}>
+          Return to Dashboard
+        </Button>
+      </Stack>
+    );
+  }
+
+  if (!gameDetails) {
+    return (
+      <Stack flex={1} alignItems="center" justifyContent="center" gap="$4">
+        <Text fontSize="$lg">Game not found</Text>
+        <Button onPress={() => navigate(routes.dashboard)}>
+          Return to Dashboard
+        </Button>
       </Stack>
     );
   }
@@ -157,131 +178,92 @@ export function GameResultsPage() {
     <Stack flex={1} backgroundColor="$background" alignItems="center" justifyContent="center" padding="$4">
       <YStack gap="$6" maxWidth={800} width="100%" alignItems="center">
         {/* Result Animation */}
-        <AnimatePresence>
-          <Stack
-            animation="bouncy"
-            enterStyle={{ scale: 0, opacity: 0 }}
-            exitStyle={{ scale: 0, opacity: 0 }}
-            scale={1}
-            opacity={1}
-          >
-            <YStack gap="$4" alignItems="center">
-              {isWinner ? (
-                <>
-                  <Stack
-                    animation="bouncy"
-                    enterStyle={{ rotate: '180deg' }}
-                    rotate="0deg"
-                  >
-                    <Trophy size={120} color="$neonYellow" strokeWidth={1.5} />
-                  </Stack>
-                  <Text
-                    fontSize={64}
-                    fontWeight="900"
-                    color="$neonYellow"
-                    style={{ fontFamily: 'Orbitron, monospace' }}
-                    animation="bouncy"
-                    enterStyle={{ y: -50, opacity: 0 }}
-                    y={0}
-                    opacity={1}
-                  >
-                    VICTORY!
-                  </Text>
-                </>
-              ) : (
-                <>
-                  <Stack opacity={0.6}>
-                    <Award size={120} color="$textMuted" strokeWidth={1.5} />
-                  </Stack>
-                  <Text
-                    fontSize={48}
-                    fontWeight="900"
-                    color="$textMuted"
-                    style={{ fontFamily: 'Orbitron, monospace' }}
-                  >
-                    Game Over
-                  </Text>
-                  <Text fontSize="$xl" color="$neonBlue" fontWeight="bold">
-                    #{currentPlayer?.rank || '-'} Place
-                  </Text>
-                </>
-              )}
-            </YStack>
-          </Stack>
-        </AnimatePresence>
+        <YStack gap="$4" alignItems="center">
+          {isWinner ? (
+            <>
+              <Stack>
+                <Trophy size={120} color="$neonYellow" strokeWidth={1.5} />
+              </Stack>
+              <Text
+                fontSize={64}
+                fontWeight="900"
+                color="$neonYellow"
+                style={{ fontFamily: 'Orbitron, monospace' }}
+              >
+                VICTORY!
+              </Text>
+            </>
+          ) : (
+            <>
+              <Stack opacity={0.6}>
+                <Award size={120} color="$textMuted" strokeWidth={1.5} />
+              </Stack>
+              <Text
+                fontSize={48}
+                fontWeight="900"
+                color="$textMuted"
+                style={{ fontFamily: 'Orbitron, monospace' }}
+              >
+                Game Over
+              </Text>
+              <Text fontSize="$xl" color="$neonBlue" fontWeight="bold">
+                #{currentPlayer?.rank || '-'} Place
+              </Text>
+            </>
+          )}
+        </YStack>
 
         {/* Player Rankings */}
-        <AnimatePresence>
-          {showPlayers && (
-            <YStack
-              gap="$3"
-              width="100%"
-              animation="quick"
-              enterStyle={{ x: -50, opacity: 0 }}
-              x={0}
-              opacity={1}
-            >
-              <Text fontSize="$lg" fontWeight="bold" textAlign="center" marginBottom="$2">
-                Final Rankings
-              </Text>
-              {rankedPlayers.map((player) => (
-                <Stack
-                  key={player.userId}
-                  animation="quick"
-                  enterStyle={{ x: -50, opacity: 0 }}
-                  x={0}
-                  opacity={1}
-                >
-                  <PlayerResultCard
-                    player={player}
-                    isCurrentPlayer={player.userId === user?.id}
-                    totalCells={totalCells}
-                  />
-                </Stack>
-              ))}
-            </YStack>
-          )}
-        </AnimatePresence>
+        {showPlayers && (
+          <YStack gap="$3" width="100%">
+            <Text fontSize="$lg" fontWeight="bold" textAlign="center" marginBottom="$2">
+              Final Rankings
+            </Text>
+            {rankedPlayers.map((player) => (
+              <Stack key={player.userId}>
+                <PlayerResultCard
+                  player={player}
+                  isCurrentPlayer={player.userId === user?.id}
+                  totalCells={totalCells}
+                />
+              </Stack>
+            ))}
+          </YStack>
+        )}
 
         {/* Game Stats */}
-        <AnimatePresence>
-          {showStats && (
-            <XStack
-              gap="$4"
-              flexWrap="wrap"
-              justifyContent="center"
-              animation="quick"
-              enterStyle={{ y: 50, opacity: 0 }}
-              y={0}
-              opacity={1}
-            >
-              <StatCard
-                icon={<Clock size={24} />}
-                label="Duration"
-                value={formatTime(gameStats.duration)}
-                color="$neonBlue"
-              />
-              <StatCard
-                icon={<Target size={24} />}
-                label="Total Moves"
-                value={gameStats.totalMoves.toString()}
-                color="$neonGreen"
-              />
-              <StatCard
-                icon={<TrendingUp size={24} />}
-                label="Longest Streak"
-                value={gameStats.longestStreak.toString()}
-                color="$neonPink"
-              />
-              <StatCard
-                icon={<Award size={24} />}
-                label="Biggest Capture"
-                value={gameStats.biggestCapture.toString()}
-                color="$neonYellow"
-              />
-            </XStack>
-          )}
-        </AnimatePresence>
+        {showStats && (
+          <XStack
+            gap="$4"
+            flexWrap="wrap"
+            justifyContent="center"
+          >
+            <StatCard
+              icon={<Clock size={24} />}
+              label="Duration"
+              value={formatTime(gameStats.duration)}
+              color="$neonBlue"
+            />
+            <StatCard
+              icon={<Target size={24} />}
+              label="Total Moves"
+              value={gameStats.totalMoves.toString()}
+              color="$neonGreen"
+            />
+            <StatCard
+              icon={<TrendingUp size={24} />}
+              label="Longest Streak"
+              value={gameStats.longestStreak.toString()}
+              color="$neonPink"
+            />
+            <StatCard
+              icon={<Award size={24} />}
+              label="Biggest Capture"
+              value={gameStats.biggestCapture.toString()}
+              color="$neonYellow"
+            />
+          </XStack>
+        )}
 
         {/* Action Buttons */}
         <XStack gap="$4" width="100%" maxWidth={400}>

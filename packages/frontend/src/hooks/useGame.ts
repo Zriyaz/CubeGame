@@ -89,12 +89,15 @@ export const useMyActiveGames = () => {
 /**
  * Hook to get game details
  */
-export const useGameDetails = (gameId: string) => {
+export const useGameDetails = (gameId: string, options?: { refetchOnMount?: boolean | 'always' }) => {
   return useQuery({
     queryKey: gameKeys.detail(gameId),
     queryFn: () => gameApi.getGame(gameId),
     staleTime: 5 * 1000, // 5 seconds
     enabled: !!gameId,
+    refetchOnMount: options?.refetchOnMount ?? 'always', // Always refetch on mount to get latest status
+    retry: 1, // Only retry once on failure
+    retryDelay: 1000, // Wait 1 second before retry
   });
 };
 

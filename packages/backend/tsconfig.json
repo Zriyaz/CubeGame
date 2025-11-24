@@ -19,6 +19,7 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "moduleResolution": "node",
+    "composite": true,
     "baseUrl": "./src",
     "paths": {
       "@/*": ["*"],
