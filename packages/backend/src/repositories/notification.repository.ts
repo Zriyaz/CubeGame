@@ -320,7 +320,10 @@ export class NotificationRepository {
     const values: any[] = [];
     let valueIndex = 1;
 
-    Object.entries(data).forEach(([key, value]) => {
+    // Filter out user_id from data since it's handled separately
+    const { user_id, ...updateData } = data as any;
+
+    Object.entries(updateData).forEach(([key, value]) => {
       if (value !== undefined) {
         fields.push(`${key} = $${valueIndex}`);
         values.push(value);
@@ -339,8 +342,8 @@ export class NotificationRepository {
 
     values.push(userId);
     const query = `
-      INSERT INTO notification_preferences (user_id, ${Object.keys(data).join(', ')})
-      VALUES ($${valueIndex}, ${Object.keys(data).map((_, i) => `$${i + 1}`).join(', ')})
+      INSERT INTO notification_preferences (user_id, ${Object.keys(updateData).join(', ')})
+      VALUES ($${valueIndex}, ${Object.keys(updateData).map((_, i) => `$${i + 1}`).join(', ')})
       ON CONFLICT (user_id) DO UPDATE SET
       ${fields.join(', ')}, updated_at = CURRENT_TIMESTAMP
       RETURNING *

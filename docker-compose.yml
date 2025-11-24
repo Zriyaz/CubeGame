@@ -1,19 +1,17 @@
-version: '3.9'
-
 services:
   postgres:
     image: postgres:15-alpine
     container_name: socket-game-postgres
     environment:
-      POSTGRES_DB: socket_game
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres123
+      POSTGRES_DB: ${POSTGRES_DB:-socket_game}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres123}
     ports:
-      - '5432:5432'
+      - '${POSTGRES_PORT:-5432}:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-postgres}']
       interval: 5s
       timeout: 5s
       retries: 5
@@ -21,58 +19,78 @@ services:
   redis:
     image: redis:7-alpine
     container_name: socket-game-redis
-    command: redis-server --appendonly yes --requirepass redis123
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis123}
     ports:
-      - '6379:6379'
+      - '${REDIS_PORT:-6379}:6379'
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ['CMD', 'redis-cli', '--raw', 'incr', 'ping']
+      test: ['CMD', 'redis-cli', '-a', '${REDIS_PASSWORD:-redis123}', '--raw', 'incr', 'ping']
       interval: 5s
       timeout: 5s
       retries: 5
 
   backend:
     build:
-      context: ./packages/backend
-      dockerfile: ../../docker/Dockerfile.backend
+      context: .
+      dockerfile: ./docker/Dockerfile.backend.dev
     container_name: socket-game-backend
     ports:
-      - '3000:3000'
+      - '${BACKEND_PORT:-5000}:5000'
     environment:
-      NODE_ENV: development
-      PORT: 3000
-      DATABASE_URL: postgresql://postgres:postgres123@postgres:5432/socket_game
-      REDIS_URL: redis://:redis123@redis:6379
-      JWT_SECRET: your-jwt-secret-key
-      GOOGLE_CLIENT_ID: your-google-client-id
-      GOOGLE_CLIENT_SECRET: your-google-client-secret
-      FRONTEND_URL: http://localhost:5173
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: ${BACKEND_PORT:-5000}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      SESSION_SECRET: ${SESSION_SECRET}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL}
+      FRONTEND_URL: ${FRONTEND_URL}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
     volumes:
-      - ./packages/backend:/app
-      - /app/node_modules
+      - ./packages/backend:/app/packages/backend
+      - ./packages/shared:/app/packages/shared
+      - ./package.json:/app/package.json
+      - ./package-lock.json:/app/package-lock.json
+      - backend_node_modules:/app/packages/backend/node_modules
+      - shared_node_modules:/app/packages/shared/node_modules
+      - root_node_modules:/app/node_modules
     command: npm run dev
 
   frontend:
     build:
-      context: ./packages/frontend
-      dockerfile: ../../docker/Dockerfile.frontend.dev
+      context: .
+      dockerfile: ./docker/Dockerfile.frontend.dev
     container_name: socket-game-frontend
     ports:
-      - '5173:5173'
+      - '${FRONTEND_PORT:-5173}:5173'
     environment:
-      VITE_API_URL: http://localhost:3000
-      VITE_WS_URL: ws://localhost:3000
+      VITE_API_URL: ${VITE_API_URL}
+      VITE_WS_URL: ${VITE_WS_URL}
     volumes:
-      - ./packages/frontend:/app
-      - /app/node_modules
-    command: npm run dev
+      - ./packages/frontend:/app/packages/frontend
+      - ./packages/shared:/app/packages/shared
+      - ./package.json:/app/package.json
+      - ./package-lock.json:/app/package-lock.json
+      - frontend_node_modules:/app/packages/frontend/node_modules
+      - shared_node_modules_frontend:/app/packages/shared/node_modules
+      - root_node_modules_frontend:/app/node_modules
+    command: npm run dev -w @socket-game/frontend
 
 volumes:
   postgres_data:
   redis_data:
+  backend_node_modules:
+  shared_node_modules:
+  root_node_modules:
+  frontend_node_modules:
+  shared_node_modules_frontend:
+  root_node_modules_frontend:

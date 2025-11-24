@@ -38,7 +38,7 @@ import { soundManager } from './utils/sound/soundManager';
 
 function AppContent() {
   const { isAuthenticated, isInitialized } = useAuthStore();
-  const { isLoading } = useCurrentUser();
+  const { isLoading, isError } = useCurrentUser();
 
   useEffect(() => {
     // Cleanup sounds on unmount
@@ -47,8 +47,9 @@ function AppContent() {
     };
   }, []);
 
-  // Show loading spinner while checking auth
-  if (!isInitialized || isLoading) {
+  // Show loading spinner while checking auth (but don't wait forever)
+  // If there's an error, still proceed - useCurrentUser will have set isInitialized
+  if (!isInitialized && isLoading && !isError) {
     return (
       <Stack flex={1} alignItems="center" justifyContent="center" minHeight="100vh">
         <Spinner size="large" color="$neonBlue" />

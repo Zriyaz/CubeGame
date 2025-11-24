@@ -84,10 +84,8 @@ api.interceptors.response.use(
       } catch (refreshError) {
         processQueue(refreshError as AxiosError, null);
         
-        // Only redirect to login for actual authenticated requests, not initial checks
-        if (originalRequest.url && !skipRefreshEndpoints.some(endpoint => originalRequest.url?.includes(endpoint))) {
-          window.location.href = '/login';
-        }
+        // Don't redirect - let the app handle auth state naturally
+        // The useCurrentUser hook will handle 401 errors gracefully
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

@@ -44,12 +44,19 @@ export class NotificationService {
    */
   static async getUserPreferences(userId: string): Promise<any> {
     try {
+      // First verify user exists in database
+      const user = await this.userRepo.findById(userId);
+      if (!user) {
+        logger.warn('User not found when getting preferences', { userId });
+        throw new AppError(404, 'User not found');
+      }
+
       let preferences = await this.notificationRepo.getPreferences(userId);
       
       // If no preferences exist, create defaults
       if (!preferences) {
-        preferences = {
-          user_id: userId,
+        // Don't include user_id in the data object - it's passed separately
+        const defaultPreferences = {
           game_invitations: true,
           game_updates: true,
           achievements: true,
@@ -60,19 +67,30 @@ export class NotificationService {
         
         // Try to create default preferences
         try {
-          await this.notificationRepo.updatePreferences(userId, preferences);
+          preferences = await this.notificationRepo.updatePreferences(userId, defaultPreferences);
         } catch (createError) {
           logger.warn('Could not create default preferences', {
             userId,
             error: createError instanceof Error ? createError.message : 'Unknown error'
           });
+          // Return defaults if creation failed
+          preferences = {
+            user_id: userId,
+            ...defaultPreferences,
+          };
         }
       }
       
       return preferences;
     } catch (error) {
       logger.error('Failed to get user preferences', { error, userId });
-      // Return defaults on error
+      
+      // If it's a user not found error, re-throw it
+      if (error instanceof AppError && error.statusCode === 404) {
+        throw error;
+      }
+      
+      // Return defaults on other errors
       return {
         user_id: userId,
         game_invitations: true,

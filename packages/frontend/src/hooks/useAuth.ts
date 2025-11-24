@@ -33,22 +33,29 @@ export const useCurrentUser = () => {
       try {
         const { data } = await apiClient.get<AuthResponse>(API_ENDPOINTS.AUTH_ME);
         setUser(data.user);
+        setInitialized(true);
         return data.user;
       } catch (error: any) {
         // If 401 (unauthorized), this is expected when not logged in
         if (error?.response?.status === 401) {
           setUser(null);
+          setInitialized(true);
           return null;
         }
-        // For other errors, throw to trigger retry
-        throw error;
+        // For other errors, still mark as initialized to prevent infinite loading
+        setInitialized(true);
+        setUser(null);
+        return null;
       } finally {
         setLoading(false);
-        setInitialized(true);
       }
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: false, // Don't retry auth requests
+    refetchOnWindowFocus: false, // Prevent refetch on window focus to avoid loops
+    refetchOnMount: true, // Only refetch on mount
+    refetchOnReconnect: false, // Don't refetch on reconnect
+    gcTime: Infinity, // Keep data in cache indefinitely
   });
 };
 
